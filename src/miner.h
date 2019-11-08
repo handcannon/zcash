@@ -24,13 +24,13 @@ struct CBlockTemplate
 };
 
 /** Generate a new block, without valid proof-of-work */
-CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& scriptPubKeyIn);
+CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& scriptPubKeyIn, uint64_t nonce = 0, uint64_t plotID = 0, uint64_t deadline = 0);
 
 #ifdef ENABLE_MINING
 /** Get script for -mineraddress */
 void GetScriptForMinerAddress(boost::shared_ptr<CReserveScript> &script);
 /** Modify the extranonce in a block */
-void IncrementExtraNonce(CBlock* pblock, const CBlockIndex* pindexPrev, unsigned int& nExtraNonce);
+void IncrementExtraNonce(CBlock* pblock, const CBlockIndex* pindexPrev, uint64_t nExtraNonce);
 /** Run the miner threads */
 void GenerateBitcoins(bool fGenerate, int nThreads, const CChainParams& chainparams);
 #endif

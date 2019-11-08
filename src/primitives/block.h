@@ -29,8 +29,14 @@ public:
     uint256 hashFinalSaplingRoot;
     uint32_t nTime;
     uint32_t nBits;
-    uint256 nNonce;
+    uint64_t nNonce; //uint256 nNonce;
     std::vector<unsigned char> nSolution;
+
+	//poc
+    uint256 genSign;
+    uint64_t nPlotID;
+    uint64_t nBaseTarget;
+    uint64_t nDeadline;
 
     CBlockHeader()
     {
@@ -49,6 +55,11 @@ public:
         READWRITE(nBits);
         READWRITE(nNonce);
         READWRITE(nSolution);
+
+        READWRITE(genSign);
+        READWRITE(nPlotID);
+        READWRITE(nBaseTarget);
+        READWRITE(nDeadline);
     }
 
     void SetNull()
@@ -59,8 +70,13 @@ public:
         hashFinalSaplingRoot.SetNull();
         nTime = 0;
         nBits = 0;
-        nNonce = uint256();
+        nNonce = 0; //uint256();
         nSolution.clear();
+
+        genSign.SetNull();
+        nPlotID = 0;
+        nBaseTarget = 0;
+        nDeadline = 0;
     }
 
     bool IsNull() const
@@ -123,6 +139,12 @@ public:
         block.nBits          = nBits;
         block.nNonce         = nNonce;
         block.nSolution      = nSolution;
+
+        block.genSign = genSign;
+        block.nPlotID = nPlotID;
+        block.nBaseTarget = nBaseTarget;
+        block.nDeadline = nDeadline;
+
         return block;
     }
 

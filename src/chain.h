@@ -234,8 +234,14 @@ public:
     uint256 hashFinalSaplingRoot;
     unsigned int nTime;
     unsigned int nBits;
-    uint256 nNonce;
+    uint64_t nNonce; //uint256 nNonce;
     std::vector<unsigned char> nSolution;
+
+    //! block header poc
+    uint256 genSign;
+    uint64_t nPlotID;
+    uint64_t nBaseTarget;
+    uint64_t nDeadline;
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     uint32_t nSequenceId;
@@ -267,8 +273,13 @@ public:
         hashFinalSaplingRoot   = uint256();
         nTime          = 0;
         nBits          = 0;
-        nNonce         = uint256();
+        nNonce         = 0; //uint256();
         nSolution.clear();
+
+        nPlotID = 0;
+        genSign.SetNull();
+        nBaseTarget = 0;
+        nDeadline = 0;
     }
 
     CBlockIndex()
@@ -287,6 +298,11 @@ public:
         nBits          = block.nBits;
         nNonce         = block.nNonce;
         nSolution      = block.nSolution;
+
+        nPlotID = block.nPlotID;
+        genSign = block.genSign;
+        nBaseTarget = block.nBaseTarget;
+        nDeadline = block.nDeadline;
     }
 
     CDiskBlockPos GetBlockPos() const {
@@ -319,6 +335,12 @@ public:
         block.nBits          = nBits;
         block.nNonce         = nNonce;
         block.nSolution      = nSolution;
+
+        block.nBaseTarget = nBaseTarget;
+        block.genSign = genSign;
+        block.nPlotID = nPlotID;
+        block.nDeadline = nDeadline;
+
         return block;
     }
 
@@ -442,6 +464,11 @@ public:
         READWRITE(nNonce);
         READWRITE(nSolution);
 
+        READWRITE(genSign);
+        READWRITE(nDeadline);
+        READWRITE(nPlotID);
+        READWRITE(nBaseTarget);
+
         // Only read/write nSproutValue if the client version used to create
         // this index was storing them.
         if ((s.GetType() & SER_DISK) && (nVersion >= SPROUT_VALUE_VERSION)) {
@@ -469,6 +496,12 @@ public:
         block.nBits           = nBits;
         block.nNonce          = nNonce;
         block.nSolution       = nSolution;
+
+        block.genSign = genSign;
+        block.nDeadline = nDeadline;
+        block.nPlotID = nPlotID;
+        block.nBaseTarget = nBaseTarget;
+
         return block.GetHash();
     }
 

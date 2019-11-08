@@ -102,6 +102,7 @@ public:
     std::string GetFoundersRewardAddressAtIndex(int i) const;
     /** Enforce coinbase consensus rule in regtest mode */
     void SetRegTestCoinbaseMustBeProtected() { consensus.fCoinbaseMustBeProtected = true; }
+    const uint64_t TargetDeadline() { return 60 * 60 * 24; }
 protected:
     CChainParams() {}
 
