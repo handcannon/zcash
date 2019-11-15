@@ -107,7 +107,7 @@ void UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, 
     }
 }
 
-CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& scriptPubKeyIn)
+CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& scriptPubKeyIn, uint64_t nonce = 0, uint64_t plotID = 0, uint64_t deadline = 0)
 {
     // Create new block
     std::unique_ptr<CBlockTemplate> pblocktemplate(new CBlockTemplate());
@@ -423,12 +423,14 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
         pblock->vtx[0] = txNew;
         pblocktemplate->vTxFees[0] = -nFees;
 
+        /*
         // Randomise nonce
         arith_uint256 nonce = UintToArith256(GetRandHash());
         // Clear the top and bottom 16 bits (for local use as thread flags and counters)
         nonce <<= 32;
         nonce >>= 16;
         pblock->nNonce = ArithToUint256(nonce);
+        */
 
         // Fill in header
         pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
@@ -437,6 +439,13 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
         pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock, chainparams.GetConsensus());
         pblock->nSolution.clear();
         pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
+
+        // Fill in poc fields
+        pblock->genSign = CalcGenerationSignature(pindexPrev->genSign, pindexPrev->nPlotID);
+        pblock->nNonce = nonce;
+        pblock->nDeadline = deadline;
+        pblock->nPlotID = plotID;
+        AdjustBaseTarget(chainActive.Tip(), pblock); // Adjust baseTarget
 
         CValidationState state;
         if (!TestBlockValidity(state, chainparams, *pblock, pindexPrev, false, false))
