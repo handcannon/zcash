@@ -31,7 +31,6 @@
 
 using namespace std;
 
-#define ENABLE_MINING
 
 /**
  * Return average network hashes per second based on the last 'lookup' blocks,

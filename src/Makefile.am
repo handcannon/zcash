@@ -221,7 +221,10 @@ BITCOIN_CORE_H = \
   zmq/zmqabstractnotifier.h \
   zmq/zmqconfig.h\
   zmq/zmqnotificationinterface.h \
-  zmq/zmqpublishnotifier.h
+  zmq/zmqpublishnotifier.h \
+  poc/poc.h \
+  poc/poc_rpc.h \
+  poc/assembler.h
 
 
 obj/build.h: FORCE
@@ -270,6 +273,9 @@ libbitcoin_server_a_SOURCES = \
   mempool_limit.cpp \
   txmempool.cpp \
   validationinterface.cpp \
+  poc/poc.cpp \
+  poc/poc_rpc.cpp \
+  poc/assembler.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 
@@ -334,7 +340,10 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/sha256.cpp \
   crypto/sha256.h \
   crypto/sha512.cpp \
-  crypto/sha512.h
+  crypto/sha512.h \
+  crypto/sph_shabal.h \
+  crypto/shabal.h \
+  crypto/shabal.c
 
 if ENABLE_MINING
 EQUIHASH_TROMP_SOURCES = \
