@@ -30,6 +30,7 @@
 #include "addressindex.h"
 #include "spentindex.h"
 #include "timestampindex.h"
+#include "poc/assembler.h"
 
 #include <algorithm>
 #include <exception>
@@ -453,7 +454,7 @@ bool GetTimestampIndex(unsigned int high, unsigned int low, bool fActiveOnly,
 
 /** Functions for disk access for blocks */
 bool WriteBlockToDisk(const CBlock& block, CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& messageStart);
-bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus::Params& consensusParams);
+bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const int& height, const Consensus::Params& consensusParams);
 bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus::Params& consensusParams);
 
 /** Functions for validating blocks and updating the block tree */
@@ -461,11 +462,12 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus
 /** Context-independent validity checks */
 bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
     const CChainParams& chainparams,
-    bool fCheckPOW = true);
+    int height,
+    bool fCheckPOC = true);
 bool CheckBlock(const CBlock& block, CValidationState& state,
                 const CChainParams& chainparams,
                 libzcash::ProofVerifier& verifier,
-                bool fCheckPOW = true, bool fCheckMerkleRoot = true);
+                bool fCheckPOC = true, bool fCheckMerkleRoot = true);
 
 /** Context-dependent validity checks.
  *  By "context", we mean only the previous block headers, but not the UTXO
@@ -514,6 +516,9 @@ bool ReconsiderBlock(CValidationState& state, CBlockIndex *pindex);
 
 /** The currently-connected chain of blocks (protected by cs_main). */
 extern CChain chainActive;
+
+/** The assember of poc blocks (protected by cs_main). */
+extern CPOCBlockAssembler& blockAssembler;
 
 /** Global variable that points to the active CCoinsView (protected by cs_main) */
 extern CCoinsViewCache *pcoinsTip;

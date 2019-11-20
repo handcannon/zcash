@@ -486,7 +486,7 @@ void GetScriptForMinerAddress(boost::shared_ptr<CReserveScript> &script)
     script->reserveScript = CScript() << OP_DUP << OP_HASH160 << ToByteVector(keyID) << OP_EQUALVERIFY << OP_CHECKSIG;
 }
 
-void IncrementExtraNonce(CBlock* pblock, const CBlockIndex* pindexPrev, unsigned int& nExtraNonce)
+void IncrementExtraNonce(CBlock* pblock, const CBlockIndex* pindexPrev, uint64_t nExtraNonce)
 {
     // Update nExtraNonce
     static uint256 hashPrevBlock;

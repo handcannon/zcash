@@ -242,6 +242,8 @@ public:
     uint64_t nPlotID;
     uint64_t nBaseTarget;
     uint64_t nDeadline;
+    //! (memory only) Total amount of work (expected number of hashes) in the chain up to and including this block
+    arith_uint256 nCumulativeDiff;
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     uint32_t nSequenceId;

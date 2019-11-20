@@ -57,6 +57,8 @@ CCriticalSection cs_main;
 
 BlockMap mapBlockIndex;
 CChain chainActive;
+CPOCBlockAssembler g_blockAssembler;
+CPOCBlockAssembler& blockAssembler = g_blockAssembler;
 CBlockIndex *pindexBestHeader = NULL;
 static int64_t nTimeBestReceived = 0;
 CWaitableCriticalSection csBestBlock;
@@ -1789,7 +1791,7 @@ bool WriteBlockToDisk(const CBlock& block, CDiskBlockPos& pos, const CMessageHea
     return true;
 }
 
-bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus::Params& consensusParams)
+bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const int& height, const Consensus::Params& consensusParams)
 {
     block.SetNull();
 
@@ -1807,8 +1809,14 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
     }
 
     // Check the header
+    /*
     if (!(CheckEquihashSolution(&block, consensusParams) &&
           CheckProofOfWork(block.GetHash(), block.nBits, consensusParams)))
+        return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
+    */
+    auto params = Params();
+    if (height != 0 && !CheckProofOfCapacity(block.genSign, height, block.nPlotID, block.nNonce,
+                                             block.nBaseTarget, block.nDeadline, params.TargetDeadline()))
         return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
 
     return true;
@@ -1816,7 +1824,7 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
 
 bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus::Params& consensusParams)
 {
-    if (!ReadBlockFromDisk(block, pindex->GetBlockPos(), consensusParams))
+    if (!ReadBlockFromDisk(block, pindex->GetBlockPos(), pindex->nHeight, consensusParams))
         return false;
     if (block.GetHash() != pindex->GetBlockHash())
         return error("ReadBlockFromDisk(CBlock&, CBlockIndex*): GetHash() doesn't match index for %s at %s",
@@ -3164,6 +3172,8 @@ bool static DisconnectTip(CValidationState &state, const CChainParams& chainpara
         }
     }
 
+    blockAssembler.SetNull();
+
     // Update chainActive and related variables.
     UpdateTip(pindexDelete->pprev, chainparams);
     // Get the current commitment tree
@@ -3259,6 +3269,9 @@ bool static ConnectTip(CValidationState& state, const CChainParams& chainparams,
     int64_t nTime6 = GetTimeMicros(); nTimePostConnect += nTime6 - nTime5; nTimeTotal += nTime6 - nTime1;
     LogPrint("bench", "  - Connect postprocess: %.2fms [%.2fs]\n", (nTime6 - nTime5) * 0.001, nTimePostConnect * 0.000001);
     LogPrint("bench", "- Connect block: %.2fms [%.2fs]\n", (nTime6 - nTime1) * 0.001, nTimeTotal * 0.000001);
+
+    blockAssembler.SetNull();
+
     return true;
 }
 
@@ -3417,6 +3430,8 @@ static bool ActivateBestChainStep(CValidationState& state, const CChainParams& c
                 }
             }
         }
+        //chainActive is updated, clean the plotid, nonce, dl and newblockheight
+        blockAssembler.SetNull();
     }
 
     if (fBlocksDisconnected) {
@@ -3819,13 +3834,14 @@ bool CheckBlockHeader(
     const CBlockHeader& block,
     CValidationState& state,
     const CChainParams& chainparams,
-    bool fCheckPOW)
+    int height,
+    bool fCheckPOC)
 {
     // Check block version
     if (block.nVersion < MIN_BLOCK_VERSION)
         return state.DoS(100, error("CheckBlockHeader(): block version too low"),
                          REJECT_INVALID, "version-too-low");
-
+    /*
     // Check Equihash solution is valid
     if (fCheckPOW && !CheckEquihashSolution(&block, chainparams.GetConsensus()))
         return state.DoS(100, error("CheckBlockHeader(): Equihash solution invalid"),
@@ -3835,6 +3851,14 @@ bool CheckBlockHeader(
     if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, chainparams.GetConsensus()))
         return state.DoS(50, error("CheckBlockHeader(): proof of work failed"),
                          REJECT_INVALID, "high-hash");
+    */
+
+    auto params = Params();
+    // Check proof of work matches claimed amount
+    // TODO... check geneist block
+    if (fCheckPOC && height != 0 && !CheckProofOfCapacity(block.genSign, height, block.nPlotID, block.nNonce,
+                                                          block.nBaseTarget, block.nDeadline, params.TargetDeadline()))
+        return state.DoS(50, false, REJECT_INVALID, "high-hash: proof of capacity failed", false);
 
     // Check timestamp
     if (block.GetBlockTime() > GetAdjustedTime() + 2 * 60 * 60)
@@ -3847,13 +3871,23 @@ bool CheckBlockHeader(
 bool CheckBlock(const CBlock& block, CValidationState& state,
                 const CChainParams& chainparams,
                 libzcash::ProofVerifier& verifier,
-                bool fCheckPOW, bool fCheckMerkleRoot)
+                bool fCheckPOC, bool fCheckMerkleRoot)
 {
     // These are checks that are independent of context.
 
     // Check that the header is valid (particularly PoW).  This is mostly
     // redundant with the call in AcceptBlockHeader.
-    if (!CheckBlockHeader(block, state, chainparams, fCheckPOW))
+
+    auto height = 0;
+    if (!block.hashPrevBlock.IsNull()) {
+        for (auto i = 0; i <= chainActive.Height(); i++) {
+            if (chainActive[i]->GetBlockHash() == block.hashPrevBlock) {
+                height = chainActive[i]->nHeight + 1;
+                break;
+            }
+        }
+    }
+    if (!CheckBlockHeader(block, state, chainparams, height, fCheckPOC))
         return false;
 
     // Check the merkle root.

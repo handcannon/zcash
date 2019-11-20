@@ -243,10 +243,18 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     }
     result.push_back(Pair("tx", txs));
     result.push_back(Pair("time", block.GetBlockTime()));
-    result.push_back(Pair("nonce", block.nNonce.GetHex()));
-    result.push_back(Pair("solution", HexStr(block.nSolution)));
-    result.push_back(Pair("bits", strprintf("%08x", block.nBits)));
+    result.push_back(Pair("nonce", block.nNonce)); // block.nNonce.GetHex()
+    //result.push_back(Pair("solution", HexStr(block.nSolution)));
+    //result.push_back(Pair("bits", strprintf("%08x", block.nBits)));
     result.push_back(Pair("difficulty", GetDifficulty(blockindex)));
+    // poc
+    uint64_t baseTarget = blockindex->pprev ? blockindex->pprev->nBaseTarget : block.nBaseTarget;
+    result.push_back(Pair("deadline", block.nDeadline / baseTarget));
+    result.push_back(Pair("plotid", block.nPlotID));
+    result.push_back(Pair("generationsignature", block.genSign.ToString()));
+    result.push_back(Pair("basetarget", block.nBaseTarget));
+    result.push_back(Pair("cumulativediff", blockindex->nCumulativeDiff.GetHex()));
+
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
     result.push_back(Pair("anchor", blockindex->hashFinalSproutRoot.GetHex()));
 

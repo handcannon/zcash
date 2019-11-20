@@ -489,6 +489,11 @@ bool CBlockTreeDB::LoadBlockIndexGuts(boost::function<CBlockIndex*(const uint256
                 pindexNew->nTx            = diskindex.nTx;
                 pindexNew->nSproutValue   = diskindex.nSproutValue;
                 pindexNew->nSaplingValue  = diskindex.nSaplingValue;
+                // poc
+                pindexNew->genSign        = diskindex.genSign;
+                pindexNew->nPlotID        = diskindex.nPlotID;
+                pindexNew->nBaseTarget    = diskindex.nBaseTarget;
+                pindexNew->nDeadline      = diskindex.nDeadline;
 
                 // Consistency checks
                 auto header = pindexNew->GetBlockHeader();
