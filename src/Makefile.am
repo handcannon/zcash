@@ -344,7 +344,7 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/sha512.cpp \
   crypto/sha512.h \
   crypto/sph_shabal.h \
-  crypto/shabal.h \
+  crypto/sph_types.h \
   crypto/shabal.c
 
 if ENABLE_MINING
