@@ -22,7 +22,7 @@
 #include "metrics.h"
 #include "net.h"
 //#include "pow.h"
-#include "poc/poc.h"
+#include "poc.h"
 #include "primitives/transaction.h"
 #include "random.h"
 #include "timedata.h"

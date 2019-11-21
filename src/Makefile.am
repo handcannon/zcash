@@ -31,8 +31,6 @@ BITCOIN_INCLUDES=-I$(builddir) -I$(builddir)/obj $(BDB_CPPFLAGS) $(BOOST_CPPFLAG
 
 BITCOIN_INCLUDES += -I$(srcdir)/secp256k1/include
 BITCOIN_INCLUDES += -I$(srcdir)/univalue/include
-BITCOIN_INCLUDES += -I$(srcdir)/poc
-BITCOIN_INCLUDES += -I$(srcdir)
 
 LIBBITCOIN_SERVER=libbitcoin_server.a
 LIBBITCOIN_COMMON=libbitcoin_common.a
@@ -224,9 +222,9 @@ BITCOIN_CORE_H = \
   zmq/zmqconfig.h\
   zmq/zmqnotificationinterface.h \
   zmq/zmqpublishnotifier.h \
-  poc/poc.h \
-  poc/poc_rpc.h \
-  poc/assembler.h
+  poc.h \
+  rpc/poc_rpc.h \
+  assembler.h
 
 
 obj/build.h: FORCE
@@ -275,9 +273,9 @@ libbitcoin_server_a_SOURCES = \
   mempool_limit.cpp \
   txmempool.cpp \
   validationinterface.cpp \
-  poc/poc.cpp \
-  poc/poc_rpc.cpp \
-  poc/assembler.cpp \
+  poc.cpp \
+  rpc/poc_rpc.cpp \
+  assembler.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
 

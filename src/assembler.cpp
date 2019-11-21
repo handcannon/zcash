@@ -1,10 +1,12 @@
-#include <Assembler.h>
+#include <assembler.h>
 #include <chainparams.h>
-#include <logging.h>
+//#include <logging.h>
+#include <util.h>
 #include <miner.h>
 #include <poc.h>
-#include <util/time.h>
-#include <validation.h>
+#include <utiltime.h>
+//#include <validation.h>
+#include "main.h"
 #include <key_io.h>
 #include <actiondb.h>
 #include <timedata.h>
@@ -77,11 +79,13 @@ void CPOCBlockAssembler::CreateNewBlock()
     auto plotid = from.GetPlotID();
     LogPrintf("CPOCBlockAssembler CreateNewBlock, plotid: %u nonce:%u newheight:%u deadline:%u utc:%u\n", plotid, nonce, height, deadline, GetTimeMillis()/1000);
     auto params = Params();
+
+    /*
     //plotid bind
     auto to = prelationview->To(from);
     auto target = to.IsNull() ? from : to;
     auto fstx = MakeTransactionRef();
-
+    
     //find firestone for coinbase
     {
         LOCK(cs_main);
@@ -123,6 +127,7 @@ void CPOCBlockAssembler::CreateNewBlock()
             };
             fstx = makeSpentTicketTx(fs, height, CTxDestination(fskey.GetPubKey().GetID()), fskey);
         }
+        */
     }
     
     auto scriptPubKeyIn = GetScriptForDestination(CTxDestination(target));

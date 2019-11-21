@@ -9,6 +9,8 @@
 
 #include <boost/variant.hpp>
 
+using CTransactionRef = std::shared_ptr<const CTransaction>;
+
 typedef std::pair<CKeyID, CKeyID> CBindAction;
 typedef CKeyID CUnbindAction;
 class CNilAction {

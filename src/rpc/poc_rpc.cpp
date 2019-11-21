@@ -10,17 +10,18 @@
 #include "keystore.h"
 #include "sync.h"
 #include "util.h"
-#include "util/strencodings.h"
-#include "wallet/coincontrol.h"
+#include "utilstrencodings.h"
+#include "coincontrol.h"
 #include "wallet/wallet.h"
 
 #include <algorithm>
 #include <queue>
 #include <wallet/rpcwallet.h>
-#include <ticket.h>
-#include <consensus/tx_verify.h>
+//#include <ticket.h>
+//#include <consensus/tx_verify.h>
 #include <net.h>
-#include <validation.h>
+//#include <validation.h>
+#include "main.h"
 
 UniValue getAddressPlotId(const JSONRPCRequest& request)
 {
@@ -165,6 +166,7 @@ UniValue submitNonce(const JSONRPCRequest& request)
     return obj;
 }
 
+/*
 UniValue getslotinfo(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() > 1)
@@ -247,6 +249,7 @@ UniValue setfsowner(const JSONRPCRequest& request){
     blockAssembler.SetFirestoneAt(fsSourceKey);
     return true;
 }
+*/
 
 // clang-format off
 static const CRPCCommand commands[] =
@@ -255,8 +258,8 @@ static const CRPCCommand commands[] =
     { "poc",               "getmininginfo",           &getMiningInfo,          {} },
     { "poc",               "submitnonce",             &submitNonce,            {"address", "nonce", "deadline"} },
 	{ "poc",               "getaddressplotid",        &getAddressPlotId,       {"address"} },
-    { "poc",               "getslotinfo",             &getslotinfo,            {"index"} },
-    { "wallet",            "setfsowner",             &setfsowner,            {"address"} },    
+    //{ "poc",               "getslotinfo",             &getslotinfo,            {"index"} },
+    //{ "wallet",            "setfsowner",             &setfsowner,            {"address"} },    
 };
 
 void RegisterPocRPCCommands(CRPCTable& t)

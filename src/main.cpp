@@ -21,7 +21,7 @@
 #include "metrics.h"
 #include "net.h"
 #include "pow.h"
-#include "poc/poc.h"
+#include "poc.h"
 #include "txmempool.h"
 #include "ui_interface.h"
 #include "undo.h"

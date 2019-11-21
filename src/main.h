@@ -30,7 +30,7 @@
 #include "addressindex.h"
 #include "spentindex.h"
 #include "timestampindex.h"
-#include "poc/assembler.h"
+#include "assembler.h"
 
 #include <algorithm>
 #include <exception>

@@ -1,7 +1,8 @@
 #include <actiondb.h>
-#include <validation.h>
+//#include <validation.h>
 #include <chainparams.h>
-#include <logging.h>
+//#include <logging.h>
+#include <util.h>
 
 CAction MakeBindAction(const CKeyID& from, const CKeyID& to)
 {
