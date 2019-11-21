@@ -531,7 +531,7 @@ static bool ProcessBlockFound(const CBlock* pblock, const CChainParams& chainpar
 }
 
 void static BitcoinMiner(const CChainParams& chainparams)
-{
+{/*
     LogPrintf("ZcashMiner started\n");
     SetThreadPriority(THREAD_PRIORITY_LOWEST);
     RenameThread("zcash-miner");
@@ -759,7 +759,7 @@ void static BitcoinMiner(const CChainParams& chainparams)
         return;
     }
     miningTimer.stop();
-    c.disconnect();
+    c.disconnect(); */
 }
 
 void GenerateBitcoins(bool fGenerate, int nThreads, const CChainParams& chainparams)

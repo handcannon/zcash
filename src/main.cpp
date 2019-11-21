@@ -21,6 +21,7 @@
 #include "metrics.h"
 #include "net.h"
 #include "pow.h"
+#include "poc/poc.h"
 #include "txmempool.h"
 #include "ui_interface.h"
 #include "undo.h"
@@ -4059,7 +4060,7 @@ static bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state
         return true;
     }
 
-    if (!CheckBlockHeader(block, state, chainparams))
+    if (!CheckBlockHeader(block, state, chainparams, pindex->nHeight))
         return false;
 
     // Get prev block index
@@ -4988,7 +4989,7 @@ bool LoadExternalBlockFile(const CChainParams& chainparams, FILE* fileIn, CDiskB
                     std::pair<std::multimap<uint256, CDiskBlockPos>::iterator, std::multimap<uint256, CDiskBlockPos>::iterator> range = mapBlocksUnknownParent.equal_range(head);
                     while (range.first != range.second) {
                         std::multimap<uint256, CDiskBlockPos>::iterator it = range.first;
-                        if (ReadBlockFromDisk(block, it->second, chainparams.GetConsensus()))
+                        if (ReadBlockFromDisk(block, it->second, chainActive.Tip()->nHeight, chainparams.GetConsensus()))
                         {
                             LogPrintf("%s: Processing out of order child %s of %s\n", __func__, block.GetHash().ToString(),
                                     head.ToString());

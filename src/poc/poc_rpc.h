@@ -5,7 +5,7 @@
 #ifndef BITCOIN_RPC_POC_H
 #define BITCOIN_RPC_POC_H
 
-#include "server.h"
+#include "rpc/server.h"
 #include <univalue.h>
 
 /** Register a new account for mining. */

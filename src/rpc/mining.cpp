@@ -158,7 +158,7 @@ UniValue getgenerate(const UniValue& params, bool fHelp)
 }
 
 UniValue generate(const UniValue& params, bool fHelp)
-{
+{/*
     if (fHelp || params.size() < 1 || params.size() > 1)
         throw runtime_error(
             "generate numblocks\n"
@@ -256,7 +256,9 @@ endloop:
         //mark script as important because it was used at least for one coinbase output
         coinbaseScript->KeepScript();
     }
-    return blockHashes;
+    return blockHashes; */
+
+    return NullUniValue;
 }
 
 UniValue setgenerate(const UniValue& params, bool fHelp)
@@ -629,7 +631,7 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
 
     // Update nTime
     UpdateTime(pblock, Params().GetConsensus(), pindexPrev);
-    pblock->nNonce = uint256();
+    pblock->nNonce = 0; //uint256();
 
     UniValue aCaps(UniValue::VARR); aCaps.push_back("proposal");
 
