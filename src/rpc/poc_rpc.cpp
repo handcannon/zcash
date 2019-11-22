@@ -23,11 +23,11 @@
 //#include <validation.h>
 #include "main.h"
 
-UniValue getAddressPlotId(const JSONRPCRequest& request)
+UniValue getAddressPlotId(const UniValue& params, bool fHelp)
 {
-    if (request.fHelp || request.params.size() != 1) {
-        throw std::runtime_error(
-            RPCHelpMan{
+    if (fHelp || params.size() != 1) {
+        throw std::runtime_error("getAddressPlotId"
+            /*RPCHelpMan{
                 "getaddressplotid",
                 "\nReturns a plot id.",
                 {{"address", RPCArg::Type::STR, RPCArg::Optional::NO, "Your miner address"}},
@@ -38,11 +38,11 @@ UniValue getAddressPlotId(const JSONRPCRequest& request)
                 RPCExamples{
                     HelpExampleCli("getaddressplotid", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\"") + HelpExampleRpc("getaddressplotid", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\"")},
             }
-                .ToString());
+                .ToString()*/);
     }
 
     std::vector<std::shared_ptr<CWallet>> wallets = GetWallets();
-    auto wallet = wallets.size() == 1 || (request.fHelp && wallets.size() > 0) ? wallets[0] : nullptr;
+    auto wallet = wallets.size() == 1 || (fHelp && wallets.size() > 0) ? wallets[0] : nullptr;
     if (wallet == nullptr) {
         return NullUniValue;
     }
@@ -53,7 +53,7 @@ UniValue getAddressPlotId(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
     }
     LOCK(cs_main);
-    std::string strAddress = request.params[0].get_str();
+    std::string strAddress = params[0].get_str();
     CTxDestination dest = DecodeDestination(strAddress);
     if (!IsValidDestination(dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Bitcoin address");
@@ -68,11 +68,11 @@ UniValue getAddressPlotId(const JSONRPCRequest& request)
     return obj;
 }
 
-UniValue getMiningInfo(const JSONRPCRequest& request)
+UniValue getMiningInfo(const UniValue& params, bool fHelp)
 {
-    if (request.fHelp || request.params.size() != 0) {
-        throw std::runtime_error(
-            RPCHelpMan{
+    if (fHelp || params.size() != 0) {
+        throw std::runtime_error("getMiningInfo"
+            /*RPCHelpMan{
                 "getmininginfo",
                 "\nReturns info for poc mining.",
                 {},
@@ -87,7 +87,7 @@ UniValue getMiningInfo(const JSONRPCRequest& request)
                 RPCExamples{
                     HelpExampleCli("getmininginfo", "") + HelpExampleRpc("getmininginfo", "")},
             }
-                .ToString());
+                .ToString()*/);
     }
     LOCK(cs_main);
 
@@ -106,11 +106,11 @@ UniValue getMiningInfo(const JSONRPCRequest& request)
     return obj;
 }
 
-UniValue submitNonce(const JSONRPCRequest& request)
+UniValue submitNonce(const UniValue& params, bool fHelp)
 {
-    if (request.fHelp || request.params.size() != 4) {
-        throw std::runtime_error(
-            RPCHelpMan{
+    if (fHelp || params.size() != 4) {
+        throw std::runtime_error("submitNonce"
+            /*RPCHelpMan{
                 "submitnonce",
                 "\nSubmit the nonce form disk.",
                 {{"address", RPCArg::Type::STR, RPCArg::Optional::NO, "Your miner address"},
@@ -125,17 +125,17 @@ UniValue submitNonce(const JSONRPCRequest& request)
                 RPCExamples{
                     HelpExampleCli("submitnonce", "\"3MhzFQAXQMsmtTmdkciLE3EJsgAQkzR4Sg\" 15032170525642997731 6170762982435 100") + HelpExampleRpc("submitnonce", "\"3MhzFQAXQMsmtTmdkciLE3EJsgAQkzR4Sg\", 15032170525642997731, 6170762982435 100")},
             }
-                .ToString());
+                .ToString()*/);
     }
     std::vector<std::shared_ptr<CWallet>> wallets = GetWallets();
-    auto wallet = wallets.size() == 1 || (request.fHelp && wallets.size() > 0) ? wallets[0] : nullptr;
+    auto wallet = wallets.size() == 1 || (fHelp && wallets.size() > 0) ? wallets[0] : nullptr;
     if (wallet == nullptr) {
         return NullUniValue;
     }
     CWallet* const pwallet = wallet.get();
     auto locked_chain = pwallet->chain().lock();
 
-    std::string strAddress = request.params[0].get_str();
+    std::string strAddress = params[0].get_str();
     CTxDestination dest = DecodeDestination(strAddress);
     if (!IsValidDestination(dest) && dest.type() != typeid(CKeyID)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Bitcoin address");
@@ -143,12 +143,12 @@ UniValue submitNonce(const JSONRPCRequest& request)
     auto keyid = boost::get<CKeyID>(dest);
     auto plotID = boost::get<CKeyID>(dest).GetPlotID();
     uint64_t nonce = 0;
-    auto nonceStr = request.params[1].get_str();
+    auto nonceStr = params[1].get_str();
     if (!ParseUInt64(nonceStr, &nonce)) {
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid nonce");
     }
-    uint64_t deadline = request.params[2].get_int64();
-    int height = request.params[3].get_int();
+    uint64_t deadline = params[2].get_int64();
+    int height = params[3].get_int();
     CKey key;
     LOCK(pwallet->cs_wallet);
     if (!pwallet->IsLocked()) {

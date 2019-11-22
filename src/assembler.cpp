@@ -5,10 +5,10 @@
 #include <miner.h>
 #include <poc.h>
 #include <utiltime.h>
-//#include <validation.h>
+#include "consensus/validation.h"
 #include "main.h"
 #include <key_io.h>
-#include <actiondb.h>
+//#include <actiondb.h>
 #include <timedata.h>
 
 #include <boost/bind.hpp>
@@ -85,7 +85,7 @@ void CPOCBlockAssembler::CreateNewBlock()
     auto to = prelationview->To(from);
     auto target = to.IsNull() ? from : to;
     auto fstx = MakeTransactionRef();
-    
+
     //find firestone for coinbase
     {
         LOCK(cs_main);
@@ -127,16 +127,17 @@ void CPOCBlockAssembler::CreateNewBlock()
             };
             fstx = makeSpentTicketTx(fs, height, CTxDestination(fskey.GetPubKey().GetID()), fskey);
         }
-        */
     }
+    */
     
-    auto scriptPubKeyIn = GetScriptForDestination(CTxDestination(target));
-    auto blk = BlockAssembler(params).CreateNewBlock(scriptPubKeyIn, nonce, plotid, deadline, fstx);
+    auto scriptPubKeyIn = GetScriptForDestination(CTxDestination(from));
+    auto blk = ::CreateNewBlock(params, scriptPubKeyIn, nonce, plotid, deadline);
     if (blk) {
         uint32_t extraNonce = 0;
         IncrementExtraNonce(&blk->block, chainActive.Tip(), extraNonce);
         auto pblk = std::make_shared<CBlock>(blk->block);
-        if (ProcessNewBlock(params, pblk, true, NULL) == false) {
+        CValidationState state;
+        if (::ProcessNewBlock(state, params, NULL, pblk, true, NULL) == false) {
             LogPrintf("ProcessNewBlock failed\n");
         }
     } else {
@@ -166,6 +167,7 @@ void CPOCBlockAssembler::SetNull()
     //key = CKey();
 }
 
+/*
 void CPOCBlockAssembler::SetFirestoneAt(const CKey& key)
 {
     if (key.IsValid()) {
@@ -173,3 +175,4 @@ void CPOCBlockAssembler::SetFirestoneAt(const CKey& key)
         firestoneKey = key;
     } 
 }
+*/

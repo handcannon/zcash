@@ -19,7 +19,7 @@ public:
 
     void SetNull();
 
-    void SetFirestoneAt(const CKey& sourceKey);
+    //void SetFirestoneAt(const CKey& sourceKey);
 
     void CheckDeadline();
 

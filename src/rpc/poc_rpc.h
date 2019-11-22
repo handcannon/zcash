@@ -15,9 +15,9 @@
 //UniValue listMinerAccounts(const JSONRPCRequest& request);
 
 /** get mining info */
-UniValue getMiningInfo(const JSONRPCRequest& request);
+UniValue getMiningInfo(const UniValue& params, bool fHelp);
 
 /** get address plot id info */
-UniValue getAddressplotid(const JSONRPCRequest& request);
+UniValue getAddressplotid(const UniValue& params, bool fHelp);
 
 #endif
