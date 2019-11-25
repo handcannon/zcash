@@ -22,6 +22,7 @@
 #include <net.h>
 //#include <validation.h>
 #include "main.h"
+#include "init.h"
 
 UniValue getAddressPlotId(const UniValue& params, bool fHelp)
 {
@@ -41,13 +42,17 @@ UniValue getAddressPlotId(const UniValue& params, bool fHelp)
                 .ToString()*/);
     }
 
+    /*
     std::vector<std::shared_ptr<CWallet>> wallets = GetWallets();
     auto wallet = wallets.size() == 1 || (fHelp && wallets.size() > 0) ? wallets[0] : nullptr;
     if (wallet == nullptr) {
         return NullUniValue;
     }
     CWallet* const pwallet = wallet.get();
-    auto locked_chain = pwallet->chain().lock();
+    
+    if (!pwalletMain)
+        return NullUniValue;
+    auto locked_chain = pwalletMain->chain().lock();
     LOCK(pwallet->cs_wallet);
     if (pwallet->IsLocked()) {
         throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
@@ -62,7 +67,9 @@ UniValue getAddressPlotId(const UniValue& params, bool fHelp)
     if (keyid.IsNull()) {
         throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
     }
+    */
 
+    CKeyID keyid;
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("plotid", keyid.GetPlotID());
     return obj;
@@ -127,6 +134,8 @@ UniValue submitNonce(const UniValue& params, bool fHelp)
             }
                 .ToString()*/);
     }
+
+    /*
     std::vector<std::shared_ptr<CWallet>> wallets = GetWallets();
     auto wallet = wallets.size() == 1 || (fHelp && wallets.size() > 0) ? wallets[0] : nullptr;
     if (wallet == nullptr) {
@@ -163,6 +172,9 @@ UniValue submitNonce(const UniValue& params, bool fHelp)
     } else {
         obj.pushKV("accept", false);
     }
+    */
+
+    UniValue obj;
     return obj;
 }
 
@@ -253,11 +265,11 @@ UniValue setfsowner(const JSONRPCRequest& request){
 
 // clang-format off
 static const CRPCCommand commands[] =
-{ //  category              name                      actor (function)         argNames
+{ //  category              name                      actor (function)         okSafeMode
   //  --------------------- ------------------------  -----------------------  ----------
-    { "poc",               "getmininginfo",           &getMiningInfo,          {} },
-    { "poc",               "submitnonce",             &submitNonce,            {"address", "nonce", "deadline"} },
-	{ "poc",               "getaddressplotid",        &getAddressPlotId,       {"address"} },
+    { "poc",               "getmininginfo",           &getMiningInfo,          true },
+    { "poc",               "submitnonce",             &submitNonce,            true },
+	{ "poc",               "getaddressplotid",        &getAddressPlotId,       true },
     //{ "poc",               "getslotinfo",             &getslotinfo,            {"index"} },
     //{ "wallet",            "setfsowner",             &setfsowner,            {"address"} },    
 };

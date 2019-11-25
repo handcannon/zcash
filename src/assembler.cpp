@@ -135,7 +135,8 @@ void CPOCBlockAssembler::CreateNewBlock()
     if (blk) {
         uint32_t extraNonce = 0;
         IncrementExtraNonce(&blk->block, chainActive.Tip(), extraNonce);
-        auto pblk = std::make_shared<CBlock>(blk->block);
+        //auto pblk = std::make_shared<CBlock>(blk->block);
+        auto pblk = &blk->block;
         CValidationState state;
         if (::ProcessNewBlock(state, params, NULL, pblk, true, NULL) == false) {
             LogPrintf("ProcessNewBlock failed\n");

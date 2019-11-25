@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
         if (txFirst.size() < 2)
             txFirst.push_back(new CTransaction(pblock->vtx[0]));
         pblock->hashMerkleRoot = pblock->BuildMerkleTree();
-        pblock->nNonce = uint256S(blockinfo[i].nonce_hex);
+        pblock->nNonce = 0; //uint256S(blockinfo[i].nonce_hex);
         pblock->nSolution = ParseHex(blockinfo[i].solution_hex);
 
 /*
