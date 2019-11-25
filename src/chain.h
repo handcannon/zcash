@@ -282,6 +282,7 @@ public:
         genSign.SetNull();
         nBaseTarget = 0;
         nDeadline = 0;
+        nCumulativeDiff = arith_uint256();
     }
 
     CBlockIndex()

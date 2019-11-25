@@ -500,8 +500,8 @@ bool CBlockTreeDB::LoadBlockIndexGuts(boost::function<CBlockIndex*(const uint256
                 if (header.GetHash() != pindexNew->GetBlockHash())
                     return error("LoadBlockIndex(): block header inconsistency detected: on-disk = %s, in-memory = %s",
                        diskindex.ToString(),  pindexNew->ToString());
-                if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, Params().GetConsensus()))
-                    return error("LoadBlockIndex(): CheckProofOfWork failed: %s", pindexNew->ToString());
+                //if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, Params().GetConsensus()))
+                //    return error("LoadBlockIndex(): CheckProofOfWork failed: %s", pindexNew->ToString());
 
                 pcursor->Next();
             } else {
