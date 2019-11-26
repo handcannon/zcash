@@ -163,6 +163,32 @@ UniValue submitNonce(const UniValue& params, bool fHelp)
     if (!pwallet->IsLocked()) {
         pwallet->GetKey(keyid, key);
     }
+    */
+    
+    if (!pwalletMain)
+        return NullUniValue;
+    
+    std::string strAddress = params[0].get_str();
+    auto nonceStr          = params[1].get_str();
+    uint64_t deadline      = params[2].get_int64();
+    int height             = params[3].get_int();
+
+    CTxDestination dest = DecodeDestination(strAddress);
+    if (!IsValidDestination(dest) && dest.type() != typeid(CKeyID))
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Bitcoin address");
+    auto keyid  = boost::get<CKeyID>(dest);
+    auto plotID = boost::get<CKeyID>(dest).GetPlotID();
+
+    CKey key;
+    LOCK(pwalletMain->cs_wallet);
+    if (!pwalletMain->IsLocked()) {
+        pwalletMain->GetKey(keyid, key);
+    }
+
+    uint64_t nonce = 0;
+    if (!ParseUInt64(nonceStr, &nonce))
+        throw JSONRPCError(RPC_TYPE_ERROR, "Invalid nonce");
+    
     UniValue obj(UniValue::VOBJ);
     if (blockAssembler.UpdateDeadline(height, keyid, nonce, deadline, key)) {
         obj.pushKV("plotid", plotID);
@@ -172,9 +198,7 @@ UniValue submitNonce(const UniValue& params, bool fHelp)
     } else {
         obj.pushKV("accept", false);
     }
-    */
 
-    UniValue obj;
     return obj;
 }
 

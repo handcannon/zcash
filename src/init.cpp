@@ -1869,6 +1869,9 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                                          boost::ref(cs_main), boost::cref(pindexBestHeader));
     scheduler.scheduleEvery(f, 60);
 
+    // check poc deadline to decide whether to create new block
+    scheduler.scheduleEvery([] { blockAssembler.CheckDeadline(); }, 200);
+
 #ifdef ENABLE_MINING
     // Generate coins in the background
     GenerateBitcoins(GetBoolArg("-gen", false), GetArg("-genproclimit", 1), chainparams);
