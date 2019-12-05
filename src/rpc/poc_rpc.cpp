@@ -69,7 +69,26 @@ UniValue getAddressPlotId(const UniValue& params, bool fHelp)
     }
     */
 
-    CKeyID keyid;
+    if (!pwalletMain)
+        return NullUniValue;
+
+    
+    if (pwalletMain->IsLocked())
+        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
+    
+    LOCK(pwalletMain->cs_wallet);
+
+    std::string strAddress = params[0].get_str();
+    CTxDestination dest = DecodeDestination(strAddress);
+
+    if (!IsValidDestination(dest))
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Bitcoin address");
+
+    CKey key;
+    CKeyID keyid  = boost::get<CKeyID>(dest);
+    if (!pwalletMain->GetKey(keyid, key))
+        throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
+    
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("plotid", keyid.GetPlotID());
     return obj;
