@@ -9,6 +9,7 @@
 #include "uint256.h"
 
 #include <boost/optional.hpp>
+#include <amount.h>
 
 namespace Consensus {
 
@@ -142,6 +143,7 @@ struct Params {
     int64_t MaxActualTimespan(int nHeight) const;
 
     uint256 nMinimumChainWork;
+    CAmount nActionFee;
 };
 } // namespace Consensus
 

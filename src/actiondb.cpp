@@ -1,8 +1,10 @@
 #include <actiondb.h>
 //#include <validation.h>
+#include <main.h>
 #include <chainparams.h>
 //#include <logging.h>
 #include <util.h>
+#include <primitives/transaction.h>
 
 CAction MakeBindAction(const CKeyID& from, const CKeyID& to)
 {
@@ -79,15 +81,24 @@ CAction DecodeAction(const CTransactionRef tx, std::vector<unsigned char>& vchSi
             continue;
 
         CAmount nAmount{ 0 };
+        /*
         for (auto vin : tx->vin) {
             auto coin = pcoinsTip->AccessCoin(vin.prevout);
             nAmount += coin.out.nValue;
         }
+        */
+        CCoins coins;
+        pcoinsTip->GetCoins(tx->GetHash(), coins);
+        for (const auto& out : coins.vout)
+            nAmount += out.nValue;
+        //============================//
+
         auto outValue = tx->GetValueOut();
         if (nAmount - outValue != Params().GetConsensus().nActionFee) {
             LogPrintf("Action warning fees, fee=%u\n", nAmount - outValue);
             continue;
         }
+        
         for (auto vout : tx->vout) {
             if (vout.nValue != 0) continue;
             auto script = vout.scriptPubKey;
@@ -130,10 +141,12 @@ CKeyID CRelationView::To(uint64_t plotid) const
     if(key!=relationTip.end()){
         auto to_key = std::make_pair(DB_RELATIONID, key->second);
         if(!Read(to_key, value)){
-            LogPrint(BCLog::RELATION, "CRelationView::To failure, can not get to plotid, from:%u\n", plotid);
+            //LogPrint(BCLog::RELATION, "CRelationView::To failure, can not get to plotid, from:%u\n", plotid);
+            LogPrintf("CRelationView::To failure, can not get to plotid, from:%u\n", plotid);
         }
     }else{
-        LogPrint(BCLog::RELATION, "CRelationView::To failure, get bind to, from:%u\n", plotid);
+        //LogPrint(BCLog::RELATION, "CRelationView::To failure, get bind to, from:%u\n", plotid);
+        LogPrintf("CRelationView::To failure, get bind to, from:%u\n", plotid);
     }
     return std::move(value);
 }
@@ -175,7 +188,8 @@ void CRelationView::ConnectBlock(const int height, const CBlock &blk){
 
     std::vector<std::pair<uint256, CRelationActive>> relations;
     //accept action
-    for (auto tx: blk.vtx) {
+    for (auto trx: blk.vtx) {
+        auto tx = MakeTransactionRef(trx);
         std::vector<unsigned char> vchSig;
         auto action = DecodeAction(tx, vchSig);
         if (action.type() != typeid(CNilAction)) {
@@ -195,7 +209,8 @@ void CRelationView::ConnectBlock(const int height, const CBlock &blk){
 
     if (relations.size() > 0) {
         if (!WriteRelationsToDisk(height, relations)) {
-            LogPrint(BCLog::RELATION, "%s: WriteRelationToDisk retrun false, height:%d\n", __func__, height);
+            //LogPrint(BCLog::RELATION, "%s: WriteRelationToDisk retrun false, height:%d\n", __func__, height);
+            LogPrintf("%s: WriteRelationToDisk retrun false, height:%d\n", __func__, height);
         }
     }
 
@@ -210,7 +225,8 @@ bool CRelationView::WriteRelationsToDisk(const int height, const std::vector<std
 void CRelationView::DisconnectBlock(const int height, const CBlock &blk)
 {
     // erase disk
-    LogPrint(BCLog::RELATION, "%s: height:%d, block:%s\n", __func__, height, blk.GetHash().ToString());
+    //LogPrint(BCLog::RELATION, "%s: height:%d, block:%s\n", __func__, height, blk.GetHash().ToString());
+    LogPrintf("%s: height:%d, block:%s\n", __func__, height, blk.GetHash().ToString());
     auto key = std::make_pair(DB_ACTIVE_ACTION_KEY, height);
     Erase(key, true);
 
@@ -230,7 +246,8 @@ bool CRelationView::LoadRelationFromDisk(const int height)
     if (Exists(key)) {
         std::vector<std::pair<uint256, CRelationActive>> relations;
         if (!Read(key, relations)) {
-            LogPrint(BCLog::RELATION, "%s: Read retrun false, height:%d\n", __func__, height);
+            //LogPrint(BCLog::RELATION, "%s: Read retrun false, height:%d\n", __func__, height);
+            LogPrintf("%s: Read retrun false, height:%d\n", __func__, height);
             return false;
         }
         for (auto relation : relations) {
@@ -261,14 +278,16 @@ CRelationVector CRelationView::ListRelations() const
         auto from_key = std::make_pair(DB_RELATIONID, fromPlotid);
         CKeyID from;
         if(!Read(from_key, from)){
-            LogPrint(BCLog::RELATION, "%s: Read KeyID retrun false, PlotID:%u\n", __func__, fromPlotid);
+            //LogPrint(BCLog::RELATION, "%s: Read KeyID retrun false, PlotID:%u\n", __func__, fromPlotid);
+            LogPrintf("%s: Read KeyID retrun false, PlotID:%u\n", __func__, fromPlotid);
             continue;
         }
         auto toPlotid = iter->second;
         auto to_key = std::make_pair(DB_RELATIONID, toPlotid);
         CKeyID to;
         if(!Read(to_key, to)){
-            LogPrint(BCLog::RELATION, "%s: Read KeyID retrun false, PlotID:%u\n", __func__, toPlotid);
+            //LogPrint(BCLog::RELATION, "%s: Read KeyID retrun false, PlotID:%u\n", __func__, toPlotid);
+            LogPrintf("%s: Read KeyID retrun false, PlotID:%u\n", __func__, toPlotid);
             continue;
         }
         auto value = std::make_pair(from, to);

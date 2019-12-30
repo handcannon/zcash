@@ -468,7 +468,7 @@ public:
         genesis = CreateGenesisBlock(
             1296688602,
             2, //uint256S("0x0000000000000000000000000000000000000000000000000000000000000009"),
-            18325193796L,
+            18325193796L * 100,
             ParseHex("01936b7db1eb4ac39f151b8704642d0a8bda13ec547d54cd5e43ba142fc6d8877cab07b3"),
             0x200f0f0f, 4, 0);
         consensus.hashGenesisBlock = genesis.GetHash();

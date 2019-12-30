@@ -4060,8 +4060,8 @@ static bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state
         return true;
     }
 
-    if (!CheckBlockHeader(block, state, chainparams, pindex->nHeight))
-        return false;
+    //if (!CheckBlockHeader(block, state, chainparams, pindex->nHeight))
+    //    return false;
 
     // Get prev block index
     CBlockIndex* pindexPrev = NULL;

@@ -124,6 +124,8 @@ bool CheckProofOfCapacity(const uint256 genSig, const uint64_t height, const uin
 
 uint64_t AdjustBaseTarget(const CBlockIndex* prevBlock, const uint32_t nTime)
 {
+    return INITIAL_BASE_TARGET * 100;
+
     if (prevBlock == nullptr) 
         return INITIAL_BASE_TARGET;
     auto height = prevBlock->nHeight + 1;
@@ -206,6 +208,10 @@ uint64_t AdjustBaseTarget(const CBlockIndex* prevBlock, const uint32_t nTime)
 
 void AdjustBaseTarget(const CBlockIndex* prevBlock, CBlock* block)
 {
+    if (block)
+        block->nBaseTarget = INITIAL_BASE_TARGET * 100;
+    return;
+
     // 1. Gensis block
     auto height = 0;
     if (prevBlock != nullptr) {
