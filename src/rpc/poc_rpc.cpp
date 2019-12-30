@@ -306,6 +306,212 @@ UniValue setfsowner(const JSONRPCRequest& request){
 }
 */
 
+static UniValue bindplotid(const JSONRPCRequest& request)
+{
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = wallet.get();
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+    if (request.fHelp || request.params.size() != 2) {
+        throw std::runtime_error(
+            RPCHelpMan{
+            "bindplotid",
+            "\nbind plotid to another address.",
+            {
+                { "from", RPCArg::Type::STR, RPCArg::Optional::NO, "address" },
+                { "to", RPCArg::Type::STR, RPCArg::Optional::NO, "target" },
+            },
+            RPCResult{
+                    "\"txid\"                  (string) The transaction id.\n"
+                },
+                RPCExamples{
+                        HelpExampleCli("bindplotid", "17VkcJoDJEHyuCKgGyky8CGNnb1kPgbwr4 1QEWDafENaWingtsSGtnc3M2fiQVuEkZHi")
+                    },
+        }.ToString()
+        );
+    }
+    LOCK(pwallet->cs_wallet);
+    EnsureWalletIsUnlocked(pwallet);
+    auto checkAddress = [](std::string str) ->bool {
+        CTxDestination dest = DecodeDestination(str);
+        return IsValidDestination(dest) && dest.type() == typeid(CKeyID);
+    };
+    if (!checkAddress(request.params[0].get_str()) || !checkAddress(request.params[1].get_str())) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
+    }
+    std::string strAddress = request.params[0].get_str();
+    CTxDestination dest = DecodeDestination(strAddress);
+    auto from = GetKeyForDestination(*pwallet, dest);
+    if (from.IsNull()) {
+        throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
+    }
+    auto to = boost::get<CKeyID>(DecodeDestination(request.params[1].get_str()));
+    auto action = MakeBindAction(from, to);
+    CKey key;
+    if (!pwallet->GetKey(from, key)) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Private key for address " + strAddress + " is not known");
+    }
+
+    auto txid = SendAction(pwallet, action, key, CTxDestination(from));
+    return txid.GetHex();
+}
+
+static UniValue unbindplotid(const JSONRPCRequest& request)
+{
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = wallet.get();
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+    if (request.fHelp || request.params.size() != 1) {
+        throw std::runtime_error(
+            RPCHelpMan{
+            "unbindplotid",
+            "\nunbind plotid mapping.",
+            {
+                { "from", RPCArg::Type::STR, RPCArg::Optional::NO, "address" },
+            },
+            RPCResult{
+                    "\"txid\"                  (string) The transaction id.\n"
+                },
+                RPCExamples{
+                        HelpExampleCli("unbindplotid", "17VkcJoDJEHyuCKgGyky8CGNnb1kPgbwr4")
+                    },
+        }.ToString()
+        );
+    }
+    LOCK(pwallet->cs_wallet);
+    EnsureWalletIsUnlocked(pwallet);
+    auto strAddress = request.params[0].get_str();
+    CTxDestination dest = DecodeDestination(strAddress);
+    if (!IsValidDestination(dest) || dest.type() != typeid(CKeyID)) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
+    }
+    auto from = GetKeyForDestination(*pwallet, dest);
+    if (from.IsNull()) {
+        throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
+    }
+    auto action = CAction(CUnbindAction(from));
+    CKey key;
+    if (!pwallet->GetKey(from, key)) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Private key for address " + strAddress + " is not known");
+    }
+    auto txid = SendAction(pwallet, action, key, CTxDestination(from));
+    return txid.GetHex();
+}
+
+static UniValue getbindinginfo(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 1) {
+        throw std::runtime_error(
+            RPCHelpMan{
+            "getbindinginfo",
+            "\nunbind plotid mapping.",
+            {
+                { "address", RPCArg::Type::STR, RPCArg::Optional::NO, "address" },
+            },
+            RPCResult{
+                    "{\n"
+                    "  \"from\": {\n"
+                    "    \"address\": \"17VkcJoDJEHyuCKgGyky8CGNnb1kPgbwr4\",\n"
+                    "    \"plotid\": 8512475111423,\n"
+                    "  },\n"
+                    "  \"to\": {\n"
+                    "    \"address\": \"1QEWDafENaWingtsSGtnc3M2fiQVuEkZHi\",\n"
+                    "    \"plotid\": 14776299456771222,\n"
+                    "  }\n"
+                    "}\n"
+                },
+                RPCExamples{
+                        HelpExampleCli("getbindinginfo", "17VkcJoDJEHyuCKgGyky8CGNnb1kPgbwr4")
+                    },
+        }.ToString()
+        );
+    }
+    LOCK(cs_main);
+    auto strAddress = request.params[0].get_str();
+    CTxDestination dest = DecodeDestination(strAddress);
+    if (!IsValidDestination(dest) || dest.type() != typeid(CKeyID)) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
+    }
+    auto from = boost::get<CKeyID>(dest);
+    auto to = prelationview->To(from);
+    if (to == CKeyID()) {
+        return UniValue(UniValue::VOBJ);
+    }
+    UniValue fromVal(UniValue::VOBJ);
+    fromVal.pushKV("address", EncodeDestination(CTxDestination(from)));
+    fromVal.pushKV("plotid", from.GetPlotID());
+
+    UniValue toVal(UniValue::VOBJ);
+    toVal.pushKV("address", EncodeDestination(CTxDestination(to)));
+    toVal.pushKV("plotid", to.GetPlotID());
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("from", fromVal);
+    result.pushKV("to", toVal);
+    return result;
+}
+
+static UniValue listbindings(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 0) {
+        throw std::runtime_error(
+            RPCHelpMan{
+            "listbindings",
+            "\nlist all binding infos.",
+            {},
+            RPCResult{
+                "[\n"
+                "  {\n"
+                "    \"from\": {\n"
+                "      \"address\": \"1LfaqrJ9vrXTU3RdVTsHz7Dgn5b1ooN8KN\",\n"
+                "      \"plotid\": 14045118739489404631,\n"
+                "    },\n"
+                "    \"to\": {\n"
+                "      \"address\": \"1GwFgPsGwmyohfMCbdD6tGCYMNzbeK1N4V\",\n"
+                "      \"plotid\": 12495994880773508270,\n"
+                "    }\n"
+                "  },\n"
+                "  {\n"
+                "    \"from\": {\n"
+                "      \"address\": \"1JWYKVAY2r73FbMxwZdgwXaHPwT2srRrUx\",\n"
+                "      \"plotid\": 8195665653426294976,\n"
+                "    },\n"
+                "    \"to\": {\n"
+                "      \"address\": \"1MxchR6KHhE44M4KGPMRJtftY5jcXZ3nfA\",\n"
+                "      \"plotid\": 13765273405587843045,\n"
+                "    }\n"
+                "  }\n"
+                "]\n"
+            },
+            RPCExamples{
+                    HelpExampleCli("listbindings", "")
+                },
+        }.ToString()
+        );
+    }
+    LOCK(cs_main);
+    UniValue results(UniValue::VARR);
+    for (auto relation : prelationview->ListRelations()) {
+        auto from = relation.first;
+        auto to = relation.second;
+        UniValue fromVal(UniValue::VOBJ);
+        fromVal.pushKV("address", EncodeDestination(CTxDestination(from)));
+        fromVal.pushKV("plotid", from.GetPlotID());
+
+        UniValue toVal(UniValue::VOBJ);
+        toVal.pushKV("address", EncodeDestination(CTxDestination(to)));
+        toVal.pushKV("plotid", to.GetPlotID());
+
+        UniValue val(UniValue::VOBJ);
+        val.pushKV("from", fromVal);
+        val.pushKV("to", toVal);
+        results.push_back(val);
+    }
+    return results;
+}
+
 // clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafeMode
@@ -314,7 +520,11 @@ static const CRPCCommand commands[] =
     { "poc",               "submitnonce",             &submitNonce,            true },
 	{ "poc",               "getaddressplotid",        &getAddressPlotId,       true },
     //{ "poc",               "getslotinfo",             &getslotinfo,            {"index"} },
-    //{ "wallet",            "setfsowner",             &setfsowner,            {"address"} },    
+    //{ "wallet",            "setfsowner",             &setfsowner,            {"address"} },
+    { "poc",               "bindplotid",              &bindplotid,             true },
+    { "poc",               "unbindplotid",            &unbindplotid,           true },
+    { "poc",               "listbindings",            &listbindings,           true },
+    { "poc",               "getbindinginfo",          &getbindinginfo,         true },
 };
 
 void RegisterPocRPCCommands(CRPCTable& t)
