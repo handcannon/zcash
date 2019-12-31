@@ -31,6 +31,7 @@
 #include "spentindex.h"
 #include "timestampindex.h"
 #include "assembler.h"
+#include "actiondb.h"
 
 #include <algorithm>
 #include <exception>

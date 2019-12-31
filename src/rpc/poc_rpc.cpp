@@ -222,15 +222,14 @@ UniValue submitNonce(const UniValue& params, bool fHelp)
     return obj;
 }
 
-/*
-static UniValue bindplotid(const JSONRPCRequest& request)
+static UniValue bindplotid(const UniValue& params, bool fHelp)
 {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet* const pwallet = wallet.get();
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
-    if (request.fHelp || request.params.size() != 2) {
+    if (fHelp || params.size() != 2) {
         throw std::runtime_error(
             RPCHelpMan{
             "bindplotid",
@@ -274,6 +273,7 @@ static UniValue bindplotid(const JSONRPCRequest& request)
     return txid.GetHex();
 }
 
+/*
 static UniValue unbindplotid(const JSONRPCRequest& request)
 {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
@@ -372,10 +372,9 @@ static UniValue getbindinginfo(const UniValue& params, bool fHelp)
     return result;
 }
 
-/*
-static UniValue listbindings(const JSONRPCRequest& request)
+static UniValue listbindings(const UniValue& params, bool fHelp)
 {
-    if (request.fHelp || request.params.size() != 0) {
+    if (fHelp || params.size() != 0) {
         throw std::runtime_error(
             RPCHelpMan{
             "listbindings",
@@ -431,7 +430,6 @@ static UniValue listbindings(const JSONRPCRequest& request)
     }
     return results;
 }
-*/
 
 // clang-format off
 static const CRPCCommand commands[] =
