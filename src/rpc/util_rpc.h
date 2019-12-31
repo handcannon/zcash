@@ -5,14 +5,14 @@
 #ifndef BITCOIN_RPC_UTIL_H
 #define BITCOIN_RPC_UTIL_H
 
-#include <node/transaction.h>
-#include <pubkey.h>
-#include <rpc/protocol.h>
-#include <script/standard.h>
+//#include <pubkey.h>
+//#include <rpc/protocol.h>
+//#include <script/standard.h>
 #include <univalue.h>
 
 #include <string>
 #include <vector>
+#include <set>
 
 #include <boost/variant.hpp>
 

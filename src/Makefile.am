@@ -224,6 +224,7 @@ BITCOIN_CORE_H = \
   zmq/zmqpublishnotifier.h \
   poc.h \
   rpc/poc_rpc.h \
+  rpc/util_rpc.h \
   assembler.h \
   actiondb.h
 
@@ -276,6 +277,7 @@ libbitcoin_server_a_SOURCES = \
   validationinterface.cpp \
   poc.cpp \
   rpc/poc_rpc.cpp \
+  rpc/util_rpc.cpp \
   assembler.cpp \
   actiondb.cpp \
   $(BITCOIN_CORE_H) \
