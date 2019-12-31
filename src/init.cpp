@@ -1474,6 +1474,8 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     LogPrintf("* Using %.1fMiB for chain state database\n", nCoinDBCache * (1.0 / 1024 / 1024));
     LogPrintf("* Using %.1fMiB for in-memory UTXO set\n", nCoinCacheUsage * (1.0 / 1024 / 1024));
 
+    prelationview.reset(new CRelationView(0));
+
     bool clearWitnessCaches = false;
 
     bool fLoaded = false;
@@ -1555,6 +1557,12 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 if (!CVerifyDB().VerifyDB(chainparams, pcoinsdbview, GetArg("-checklevel", 3),
                               GetArg("-checkblocks", 288))) {
                     strLoadError = _("Corrupted block database detected");
+                    break;
+                }
+
+                // Load relation from disk
+                if (!LoadRelationView()) {
+                    strLoadError = _("Error opening relation database");
                     break;
                 }
             } catch (const std::exception& e) {

@@ -520,6 +520,9 @@ extern CChain chainActive;
 /** The assember of poc blocks (protected by cs_main). */
 extern CPOCBlockAssembler& blockAssembler;
 
+/** Global variable that points to the active CRelationView (protected by cs_main) */
+extern std::unique_ptr<CRelationView> prelationview;
+
 /** Global variable that points to the active CCoinsView (protected by cs_main) */
 extern CCoinsViewCache *pcoinsTip;
 
@@ -540,5 +543,7 @@ uint64_t CalculateCurrentUsage();
  * either be based on the command-line argument '-txexpirydelta' or derived from consensusParams.
  */
 CMutableTransaction CreateNewContextualCMutableTransaction(const Consensus::Params& consensusParams, int nHeight);
+
+bool LoadRelationView();
 
 #endif // BITCOIN_MAIN_H

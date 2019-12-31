@@ -58,8 +58,11 @@ CCriticalSection cs_main;
 
 BlockMap mapBlockIndex;
 CChain chainActive;
+
 CPOCBlockAssembler g_blockAssembler;
 CPOCBlockAssembler& blockAssembler = g_blockAssembler;
+std::unique_ptr<CRelationView> prelationview;
+
 CBlockIndex *pindexBestHeader = NULL;
 static int64_t nTimeBestReceived = 0;
 CWaitableCriticalSection csBestBlock;
@@ -2982,6 +2985,22 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     int64_t nTime4 = GetTimeMicros(); nTimeCallbacks += nTime4 - nTime3;
     LogPrint("bench", "    - Callbacks: %.2fms [%.2fs]\n", 0.001 * (nTime4 - nTime3), nTimeCallbacks * 0.000001);
 
+    // check plotid
+    {
+        auto script = block.vtx[0]->vout[0].scriptPubKey;
+        CTxDestination dest;
+        ExtractDestination(script, dest);
+        auto coinbaseDest = boost::get<CKeyID>(dest);
+        auto to = prelationview->To(block.nPlotID);
+        auto targetPlotid = to.IsNull() ? block.nPlotID : to.GetPlotID();
+        if (targetPlotid != coinbaseDest.GetPlotID()) {
+            return state.DoS(100, false, REJECT_INVALID, "bad-coinbase-plotid", false, "coinbase public key error plot id");
+        }
+    }
+
+    //accept action
+    prelationview->ConnectBlock(pindex->nHeight, block);
+
     return true;
 }
 
@@ -3141,6 +3160,7 @@ bool static DisconnectTip(CValidationState &state, const CChainParams& chainpara
     {
         CCoinsViewCache view(pcoinsTip);
         // insightexplorer: update indices (true)
+        prelationview->DisconnectBlock(pindexDelete->nHeight, block);
         if (DisconnectBlock(block, state, pindexDelete, view, chainparams, true) != DISCONNECT_OK)
             return error("DisconnectTip(): DisconnectBlock %s failed", pindexDelete->GetBlockHash().ToString());
         assert(view.Flush());
@@ -6796,4 +6816,26 @@ CMutableTransaction CreateNewContextualCMutableTransaction(const Consensus::Para
         }
     }
     return mtx;
+}
+
+bool LoadRelationView()
+{
+    LogPrintf("%s: Load Relations from block database...\n", __func__);
+    if (chainActive.Tip() == nullptr){
+        // new chain
+        return true;
+    }
+    else{
+        // assember relationMap index.
+        for (auto i = 0; i <= chainActive.Height(); i++) {
+            try {
+                if (!prelationview->LoadRelationFromDisk(i))
+                    return error("%s: failed to read relation from disk, height: %s", __func__, i);
+            }
+            catch (const std::runtime_error& e) {
+                return error("%s: failure: %s", __func__, e.what());
+            }
+        }
+        return true;
+    }
 }
