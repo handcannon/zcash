@@ -24,6 +24,7 @@
 #include "main.h"
 #include "init.h"
 #include "rpc/util_rpc.h"
+//#include "server.h"
 
 UniValue getAddressPlotId(const UniValue& params, bool fHelp)
 {
@@ -222,13 +223,66 @@ UniValue submitNonce(const UniValue& params, bool fHelp)
     return obj;
 }
 
+uint256 SendAction(CWallet *const pwallet, const CAction& action, const CKey &key, CTxDestination destChange)
+{
+    auto locked_chain = pwallet->chain().lock();
+    CAmount curBalance = pwallet->GetBalance();
+    auto actionFee = Params().GetConsensus().nActionFee;
+
+    std::vector<CRecipient> vecSend;
+    vecSend.push_back(CRecipient{ GetScriptForDestination(destChange), actionFee, false });
+    auto newTx = MakeTransactionRef();
+    CReserveKey reservekey(pwallet);
+    int nChangePosInOut = 0;
+    CAmount nFeeRequired;
+    std::string strError;
+    CCoinControl coinControl;
+    coinControl.fAllowOtherInputs = true;
+    coinControl.destChange = destChange;
+    if (!pwallet->CreateTransaction(*locked_chain, vecSend, newTx, reservekey, nFeeRequired, nChangePosInOut, strError, coinControl, false)) {
+        if (nFeeRequired > curBalance)
+            strError = strprintf("Error: This transaction requires a transaction fee of at least %s", FormatMoney(nFeeRequired));
+        throw JSONRPCError(RPC_WALLET_ERROR, strError);
+    }
+    
+    CMutableTransaction mtx(*newTx);
+    BOOST_ASSERT(mtx.vout.size() == 2);
+    std::vector<unsigned char> vch;
+    auto out = mtx.vin[0].prevout;
+    if (!SignAction(out, action, key, vch)) {
+        throw JSONRPCError(RPC_WALLET_ENCRYPTION_FAILED, "Private key sign error");
+    }
+    auto opRetScript = CScript() << OP_RETURN << ToByteVector(vch);
+    mtx.vout[1] = CTxOut(0, opRetScript);
+    mtx.vout[nChangePosInOut].nValue += nFeeRequired;
+
+    if (!pwallet->SignTransaction(mtx)) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "sign error");
+    }
+    const CAmount highfee{ actionFee };
+    uint256 txid;
+    std::string err_string;
+    auto tx = MakeTransactionRef(CTransaction(mtx));
+    CValidationState state;
+    if (!pwallet->CommitTransaction(tx, mapValue_t{}, {}, reservekey, g_connman.get(), state)) {
+        strError = strprintf("Error: The transaction was rejected! Reason given: %s", FormatStateMessage(state));
+        throw JSONRPCError(RPC_WALLET_ERROR, strError);
+    }
+    return std::move(tx->GetHash());
+}
+
 static UniValue bindplotid(const UniValue& params, bool fHelp)
 {
+    /*
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet* const pwallet = wallet.get();
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
-    }
+    }*/
+
+    if (!pwalletMain)
+        return NullUniValue;
+
     if (fHelp || params.size() != 2) {
         throw std::runtime_error(
             RPCHelpMan{
@@ -247,30 +301,34 @@ static UniValue bindplotid(const UniValue& params, bool fHelp)
         }.ToString()
         );
     }
-    LOCK(pwallet->cs_wallet);
-    EnsureWalletIsUnlocked(pwallet);
+    LOCK(pwalletMain->cs_wallet);
+    EnsureWalletIsUnlocked();
     auto checkAddress = [](std::string str) ->bool {
         CTxDestination dest = DecodeDestination(str);
         return IsValidDestination(dest) && dest.type() == typeid(CKeyID);
     };
-    if (!checkAddress(request.params[0].get_str()) || !checkAddress(request.params[1].get_str())) {
+    if (!checkAddress(params[0].get_str()) || !checkAddress(params[1].get_str())) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
     }
-    std::string strAddress = request.params[0].get_str();
+    std::string strAddress = params[0].get_str();
     CTxDestination dest = DecodeDestination(strAddress);
-    auto from = GetKeyForDestination(*pwallet, dest);
+    //auto from = GetKeyForDestination(*pwalletMain, dest);
+    auto from  = boost::get<CKeyID>(dest);
+
     if (from.IsNull()) {
         throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
     }
-    auto to = boost::get<CKeyID>(DecodeDestination(request.params[1].get_str()));
+    auto to = boost::get<CKeyID>(DecodeDestination(params[1].get_str()));
     auto action = MakeBindAction(from, to);
     CKey key;
-    if (!pwallet->GetKey(from, key)) {
+    if (!pwalletMain->GetKey(from, key)) {
         throw JSONRPCError(RPC_WALLET_ERROR, "Private key for address " + strAddress + " is not known");
     }
 
-    auto txid = SendAction(pwallet, action, key, CTxDestination(from));
-    return txid.GetHex();
+    return NullUniValue;
+
+    //auto txid = SendAction(pwallet, action, key, CTxDestination(from));
+    //return txid.GetHex();
 }
 
 /*
