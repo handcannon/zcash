@@ -124,7 +124,7 @@ static const char DB_ACTIVE_ACTION_KEY = 'K';
 static const char DB_RELATIONID = 'P';
 
 CRelationView::CRelationView(size_t nCacheSize, bool fMemory, bool fWipe)
-    : CDBWrapper(GetDataDir() / "action" / "relation", nCacheSize, fMemory, fWipe) 
+    : CDBWrapper(GetDataDir() / "actiondb", nCacheSize, fMemory, fWipe) 
 {
 }
 

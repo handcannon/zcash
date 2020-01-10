@@ -25,6 +25,7 @@
 #include "init.h"
 #include "rpc/util_rpc.h"
 //#include "server.h"
+#include "utilmoneystr.h"
 
 UniValue getAddressPlotId(const UniValue& params, bool fHelp)
 {
@@ -225,13 +226,16 @@ UniValue submitNonce(const UniValue& params, bool fHelp)
 
 uint256 SendAction(CWallet *const pwallet, const CAction& action, const CKey &key, CTxDestination destChange)
 {
-    auto locked_chain = pwallet->chain().lock();
+    //auto locked_chain = pwallet->chain().lock();
     CAmount curBalance = pwallet->GetBalance();
     auto actionFee = Params().GetConsensus().nActionFee;
 
     std::vector<CRecipient> vecSend;
     vecSend.push_back(CRecipient{ GetScriptForDestination(destChange), actionFee, false });
-    auto newTx = MakeTransactionRef();
+
+    //auto newTx = MakeTransactionRef();
+    CWalletTx wtx;
+
     CReserveKey reservekey(pwallet);
     int nChangePosInOut = 0;
     CAmount nFeeRequired;
@@ -239,13 +243,14 @@ uint256 SendAction(CWallet *const pwallet, const CAction& action, const CKey &ke
     CCoinControl coinControl;
     coinControl.fAllowOtherInputs = true;
     coinControl.destChange = destChange;
-    if (!pwallet->CreateTransaction(*locked_chain, vecSend, newTx, reservekey, nFeeRequired, nChangePosInOut, strError, coinControl, false)) {
+    if (!pwallet->CreateTransaction(vecSend, wtx, reservekey, nFeeRequired, nChangePosInOut, strError, &coinControl, false)) {
         if (nFeeRequired > curBalance)
             strError = strprintf("Error: This transaction requires a transaction fee of at least %s", FormatMoney(nFeeRequired));
         throw JSONRPCError(RPC_WALLET_ERROR, strError);
     }
     
-    CMutableTransaction mtx(*newTx);
+    CMutableTransaction mtx = *(CTransaction*)&wtx;
+    
     BOOST_ASSERT(mtx.vout.size() == 2);
     std::vector<unsigned char> vch;
     auto out = mtx.vin[0].prevout;
@@ -256,9 +261,11 @@ uint256 SendAction(CWallet *const pwallet, const CAction& action, const CKey &ke
     mtx.vout[1] = CTxOut(0, opRetScript);
     mtx.vout[nChangePosInOut].nValue += nFeeRequired;
 
-    if (!pwallet->SignTransaction(mtx)) {
-        throw JSONRPCError(RPC_WALLET_ERROR, "sign error");
-    }
+    //if (!pwallet->SignTransaction(mtx)) {
+    //    throw JSONRPCError(RPC_WALLET_ERROR, "sign error");
+    //}
+
+    /*
     const CAmount highfee{ actionFee };
     uint256 txid;
     std::string err_string;
@@ -268,7 +275,15 @@ uint256 SendAction(CWallet *const pwallet, const CAction& action, const CKey &ke
         strError = strprintf("Error: The transaction was rejected! Reason given: %s", FormatStateMessage(state));
         throw JSONRPCError(RPC_WALLET_ERROR, strError);
     }
-    return std::move(tx->GetHash());
+    */
+
+    *(CTransaction*)(&wtx) = mtx;
+    if (!pwallet->CommitTransaction(wtx, reservekey)) {
+        strError = strprintf("Error: The transaction of SendAction was rejected!");
+        throw JSONRPCError(RPC_WALLET_ERROR, strError);
+    }
+
+    return std::move(mtx.GetHash());
 }
 
 static UniValue bindplotid(const UniValue& params, bool fHelp)
@@ -325,10 +340,8 @@ static UniValue bindplotid(const UniValue& params, bool fHelp)
         throw JSONRPCError(RPC_WALLET_ERROR, "Private key for address " + strAddress + " is not known");
     }
 
-    return NullUniValue;
-
-    //auto txid = SendAction(pwallet, action, key, CTxDestination(from));
-    //return txid.GetHex();
+    auto txid = SendAction(pwalletMain, action, key, CTxDestination(from));
+    return txid.GetHex();
 }
 
 /*
@@ -496,10 +509,10 @@ static const CRPCCommand commands[] =
     { "poc",               "getmininginfo",           &getMiningInfo,          true },
     { "poc",               "submitnonce",             &submitNonce,            true },
 	{ "poc",               "getaddressplotid",        &getAddressPlotId,       true },
-    //{ "poc",               "bindplotid",              &bindplotid,             true },
+    { "poc",               "bindplotid",              &bindplotid,             true },
     //{ "poc",               "unbindplotid",            &unbindplotid,           true },
-    //{ "poc",               "listbindings",            &listbindings,           true },
-    //{ "poc",               "getbindinginfo",          &getbindinginfo,         true },
+    { "poc",               "listbindings",            &listbindings,           true },
+    { "poc",               "getbindinginfo",          &getbindinginfo,         true },
 };
 
 void RegisterPocRPCCommands(CRPCTable& t)
