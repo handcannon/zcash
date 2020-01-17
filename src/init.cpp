@@ -1878,7 +1878,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     scheduler.scheduleEvery(f, 60);
 
     // check poc deadline to decide whether to create new block
-    scheduler.scheduleEvery([] { blockAssembler.CheckDeadline(); }, 200);
+    scheduler.scheduleEvery([] { blockAssembler.CheckDeadline(); }, 10);
 
 #ifdef ENABLE_MINING
     // Generate coins in the background
