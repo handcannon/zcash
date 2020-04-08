@@ -4080,8 +4080,18 @@ static bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state
         return true;
     }
 
-    //if (!CheckBlockHeader(block, state, chainparams, pindex->nHeight))
-    //    return false;
+    auto height = 0;
+    if (!block.hashPrevBlock.IsNull()) {
+        for (auto i = 0; i <= chainActive.Height(); i++) {
+            if (chainActive[i]->GetBlockHash() == block.hashPrevBlock) {
+                height = chainActive[i]->nHeight + 1; 
+                break;
+            }
+        }
+    }
+
+    if (!CheckBlockHeader(block, state, chainparams, height)) //pindex->nHeight
+        return false;
 
     // Get prev block index
     CBlockIndex* pindexPrev = NULL;
@@ -4491,7 +4501,7 @@ bool static LoadBlockIndexDB()
                 pindex->nCachedBranchId = pindex->pprev->nCachedBranchId;
             }
         } else {
-            pindex->nCachedBranchId = SPROUT_BRANCH_ID;
+            pindex->nCachedBranchId = NetworkUpgradeInfo[Consensus::UPGRADE_SAPLING].nBranchId; //SPROUT_BRANCH_ID
         }
         if (pindex->IsValid(BLOCK_VALID_TRANSACTIONS) && (pindex->nChainTx || pindex->pprev == NULL))
             setBlockIndexCandidates.insert(pindex);

@@ -142,11 +142,11 @@ CKeyID CRelationView::To(uint64_t plotid) const
         auto to_key = std::make_pair(DB_RELATIONID, key->second);
         if(!Read(to_key, value)){
             //LogPrint(BCLog::RELATION, "CRelationView::To failure, can not get to plotid, from:%u\n", plotid);
-            LogPrintf("CRelationView::To failure, can not get to plotid, from:%u\n", plotid);
+            //LogPrintf("CRelationView::To failure, can not get to plotid, from:%u\n", plotid);
         }
     }else{
         //LogPrint(BCLog::RELATION, "CRelationView::To failure, get bind to, from:%u\n", plotid);
-        LogPrintf("CRelationView::To failure, get bind to, from:%u\n", plotid);
+        //LogPrintf("CRelationView::To failure, get bind to, from:%u\n", plotid);
     }
     return std::move(value);
 }
