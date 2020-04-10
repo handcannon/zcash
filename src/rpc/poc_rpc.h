@@ -18,6 +18,6 @@
 UniValue getMiningInfo(const UniValue& params, bool fHelp);
 
 /** get address plot id info */
-UniValue getAddressplotid(const UniValue& params, bool fHelp);
+UniValue getAddressPlotId(const UniValue& params, bool fHelp);
 
 #endif

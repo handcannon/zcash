@@ -23,6 +23,7 @@ public:
     CKeyID() : uint160() {}
     CKeyID(const uint160& in) : uint160(in) {}
 
+    /*
     uint64_t GetPlotID() const
     {
         uint64_t result = 0;
@@ -31,6 +32,12 @@ public:
             result |= (data[7 - i] & 0xFF);
         }
         return result;
+    }
+    */
+
+    uint160 GetPlotID() const
+    {
+        return Hash160(begin(), end());
     }
 };
 

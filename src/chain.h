@@ -239,7 +239,7 @@ public:
 
     //! block header poc
     uint256 genSign;
-    uint64_t nPlotID;
+    uint160 nPlotID;
     uint64_t nBaseTarget;
     uint64_t nDeadline;
     //! (memory only) Total amount of work (expected number of hashes) in the chain up to and including this block
@@ -278,7 +278,7 @@ public:
         nNonce         = 0; //uint256();
         nSolution.clear();
 
-        nPlotID = 0;
+        nPlotID.SetNull();
         genSign.SetNull();
         nBaseTarget = 0;
         nDeadline = 0;

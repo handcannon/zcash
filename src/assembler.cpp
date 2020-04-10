@@ -77,7 +77,7 @@ void CPOCBlockAssembler::CreateNewBlock()
     }
     
     auto plotid = from.GetPlotID();
-    LogPrintf("CPOCBlockAssembler CreateNewBlock, plotid: %u nonce:%u newheight:%u deadline:%u utc:%u\n", plotid, nonce, height, deadline, GetTimeMillis()/1000);
+    LogPrintf("CPOCBlockAssembler CreateNewBlock, plotid: %s nonce:%u newheight:%u deadline:%u utc:%u\n", plotid.GetHex().c_str(), nonce, height, deadline, GetTimeMillis()/1000);
     auto params = Params();
 
     /*

@@ -21,14 +21,17 @@ const uint64_t INITIAL_BASE_TARGET = 18325193796L;
 const uint64_t MAX_BASE_TARGET = 18325193796L;
 
 
-uint256 CalcGenerationSignature(uint256 lastSig, uint64_t lastPlotID)
+uint256 CalcGenerationSignature(uint256 lastSig, uint160 lastPlotID)
 {
     vector<unsigned char> signature(lastSig.size() + sizeof(lastPlotID));
     memcpy(&signature[0], lastSig.begin(), lastSig.size());
+    memcpy(&signature(lastSig.size()), lastPlotID.begin(), lastPlotID.size());
+    /*
     unsigned char* vx = (unsigned char*)&lastPlotID;
     for (auto i = 0; i < sizeof(lastPlotID); i++) {
         signature[lastSig.size() + i] = *(vx + 7 - i);
     }
+    */
 	sph_shabal256_context ctx;
     sph_shabal256_init(&ctx);
     sph_shabal256(&ctx, &signature[0], signature.size());
@@ -37,6 +40,7 @@ uint256 CalcGenerationSignature(uint256 lastSig, uint64_t lastPlotID)
     return uint256(res);
 }
 
+/*
 vector<uint8_t> genNonceChunk(const uint64_t plotID, const uint64_t nonce)
 {
     sph_shabal256_context ctx;
@@ -77,8 +81,54 @@ vector<uint8_t> genNonceChunk(const uint64_t plotID, const uint64_t nonce)
     }
     return std::move(data);
 }
+*/
+vector<uint8_t> genNonceChunk(const uint160 plotID, const uint64_t nonce)
+{
+    sph_shabal256_context ctx;
+    vector<uint8_t> genData(28 + PLOT_SIZE);
 
-uint64_t CalcDeadline(const uint256 genSig, const uint64_t height, const uint64_t plotID, const uint64_t nonce)
+    //put plotID
+    //uint8_t* xv = (uint8_t*)&plotID;
+    //for (size_t i = 0; i < 8; i++) {
+    //    genData[PLOT_SIZE + i] = xv[7 - i];
+    //}
+    memcpy(&genData[PLOT_SIZE], plotID.begin(), plotID.size());
+
+    //put nonce
+    uint8_t* xv = (uint8_t*)&nonce;
+    for (size_t i = 20; i < 28; i++) {
+        genData[PLOT_SIZE + i] = xv[27 - i];
+    }
+
+    for (auto i = PLOT_SIZE; i > 0; i -= HASH_SIZE) {
+        sph_shabal256_init(&ctx);
+        auto len = PLOT_SIZE + 28 - i;
+        if (len > HASH_CAP)
+            len = HASH_CAP;
+        sph_shabal256(&ctx, &genData[i], len);
+        sph_shabal256_close(&ctx, &genData[i - HASH_SIZE]);
+    }
+    sph_shabal256_init(&ctx);
+    sph_shabal256(&ctx, &genData[0], 28 + PLOT_SIZE);
+    vector<uint8_t> final(32);
+    sph_shabal256_close(&ctx, &final[0]);
+    // XOR with final
+    for (size_t i = 0; i < PLOT_SIZE; i++) {
+        genData[i] ^= (final[i % HASH_SIZE]);
+    }
+
+    vector<uint8_t> data(PLOT_SIZE);
+    for (size_t i = 0; i < PLOT_SIZE; i += HASH_SIZE) {
+        if ((i / HASH_SIZE) % 2 == 0) {
+            memmove(&data[i], &genData[i], HASH_SIZE);
+        } else {
+            memmove(&data[i], &genData[PLOT_SIZE - i], HASH_SIZE);
+        }
+    }
+    return std::move(data);
+}
+
+uint64_t CalcDeadline(const uint256 genSig, const uint64_t height, const uint160 plotID, const uint64_t nonce)
 {
     vector<uint8_t> scoopGen(40);
     memcpy(&scoopGen[0], genSig.begin(), genSig.size());
@@ -116,7 +166,7 @@ uint64_t CalcDeadline(const CBlockHeader* block, const CBlockIndex* prevBlock)
     return CalcDeadline(generationSig, prevBlock->nHeight+1, block->nPlotID, block->nNonce);
 }
 
-bool CheckProofOfCapacity(const uint256 genSig, const uint64_t height, const uint64_t plotID, const uint64_t nonce, const uint64_t baseTarget, const uint64_t deadline, const uint64_t targetDeadline)
+bool CheckProofOfCapacity(const uint256 genSig, const uint64_t height, const uint160 plotID, const uint64_t nonce, const uint64_t baseTarget, const uint64_t deadline, const uint64_t targetDeadline)
 {
     auto dl = CalcDeadline(genSig, height, plotID, nonce);
     return (dl == deadline) && (targetDeadline >= dl / baseTarget);

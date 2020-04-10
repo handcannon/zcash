@@ -10,13 +10,13 @@ class CBlockHeader;
 class CBlockIndex;
 class CBlock;
 
-uint256 CalcGenerationSignature(uint256 lastSig, uint64_t lastPlotID);
+uint256 CalcGenerationSignature(uint256 lastSig, uint160 lastPlotID);
 
-uint64_t CalcDeadline(const uint256 genSig, const uint64_t height, const uint64_t plotID, const uint64_t nonce);
+uint64_t CalcDeadline(const uint256 genSig, const uint64_t height, const uint160 plotID, const uint64_t nonce);
 
 uint64_t CalcDeadline(const CBlockHeader* block, const CBlockIndex* prevBlock);
 
-bool CheckProofOfCapacity(const uint256 genSig, const uint64_t height, const uint64_t plotID, const uint64_t nonce, const uint64_t baseTarget, const uint64_t deadline, const uint64_t targetDeadline);
+bool CheckProofOfCapacity(const uint256 genSig, const uint64_t height, const uint160 plotID, const uint64_t nonce, const uint64_t baseTarget, const uint64_t deadline, const uint64_t targetDeadline);
 
 void AdjustBaseTarget(const CBlockIndex* prevBlock, CBlock* block);
 

@@ -63,7 +63,7 @@ CAction DecodeAction(const CTransactionRef tx, std::vector<unsigned char>& vchSi
 
 typedef std::pair<CKeyID, CKeyID> CRelation;
 typedef std::vector<CRelation> CRelationVector;
-typedef std::map<uint64_t,uint64_t> RelationMap;
+typedef std::map<uint160,uint160> RelationMap;
 typedef std::map<int,RelationMap> RelationMapIndex;
 typedef std::pair<CKeyID, CKeyID> CRelationActive;
 
@@ -84,7 +84,7 @@ public:
      */
     CKeyID To(const CKeyID& from) const;
 
-    CKeyID To(const uint64_t plotid) const;
+    CKeyID To(const uint160 plotid) const;
 
     /** 
      * Push the relation(bind and unbind), which is at the height, into relation tip set.

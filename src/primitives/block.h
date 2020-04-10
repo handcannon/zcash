@@ -34,7 +34,7 @@ public:
 
 	//poc
     uint256 genSign;
-    uint64_t nPlotID;
+    uint160 nPlotID;
     uint64_t nBaseTarget;
     uint64_t nDeadline;
 
@@ -74,7 +74,7 @@ public:
         nSolution.clear();
 
         genSign.SetNull();
-        nPlotID = 0;
+        nPlotID.SetNull();
         nBaseTarget = 0;
         nDeadline = 0;
     }

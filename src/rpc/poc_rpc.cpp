@@ -93,7 +93,7 @@ UniValue getAddressPlotId(const UniValue& params, bool fHelp)
         throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
     
     UniValue obj(UniValue::VOBJ);
-    obj.pushKV("plotid", keyid.GetPlotID());
+    obj.pushKV("plotid", keyid.GetPlotID().ToString());
     return obj;
 }
 
@@ -213,7 +213,7 @@ UniValue submitNonce(const UniValue& params, bool fHelp)
     
     UniValue obj(UniValue::VOBJ);
     if (blockAssembler.UpdateDeadline(height, keyid, nonce, deadline, key)) {
-        obj.pushKV("plotid", plotID);
+        obj.pushKV("plotid", plotID.ToString());
         obj.pushKV("deadline", deadline);
         auto params = Params();
         obj.pushKV("targetdeadline", params.TargetDeadline());
@@ -432,11 +432,11 @@ static UniValue getbindinginfo(const UniValue& params, bool fHelp)
     }
     UniValue fromVal(UniValue::VOBJ);
     fromVal.pushKV("address", EncodeDestination(CTxDestination(from)));
-    fromVal.pushKV("plotid", from.GetPlotID());
+    fromVal.pushKV("plotid", from.GetPlotID().ToString());
 
     UniValue toVal(UniValue::VOBJ);
     toVal.pushKV("address", EncodeDestination(CTxDestination(to)));
-    toVal.pushKV("plotid", to.GetPlotID());
+    toVal.pushKV("plotid", to.GetPlotID().ToString());
     UniValue result(UniValue::VOBJ);
     result.pushKV("from", fromVal);
     result.pushKV("to", toVal);
@@ -488,11 +488,11 @@ static UniValue listbindings(const UniValue& params, bool fHelp)
         auto to = relation.second;
         UniValue fromVal(UniValue::VOBJ);
         fromVal.pushKV("address", EncodeDestination(CTxDestination(from)));
-        fromVal.pushKV("plotid", from.GetPlotID());
+        fromVal.pushKV("plotid", from.GetPlotID().ToString());
 
         UniValue toVal(UniValue::VOBJ);
         toVal.pushKV("address", EncodeDestination(CTxDestination(to)));
-        toVal.pushKV("plotid", to.GetPlotID());
+        toVal.pushKV("plotid", to.GetPlotID().ToString());
 
         UniValue val(UniValue::VOBJ);
         val.pushKV("from", fromVal);

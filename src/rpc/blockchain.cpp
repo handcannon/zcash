@@ -120,7 +120,7 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
     // poc
     uint64_t baseTarget = blockindex->pprev ? blockindex->pprev->nBaseTarget : blockindex->nBaseTarget;
     result.push_back(Pair("deadline", blockindex->nDeadline / baseTarget));
-    result.push_back(Pair("plotid", blockindex->nPlotID));
+    result.push_back(Pair("plotid", blockindex->nPlotID.ToString()));
     result.push_back(Pair("generationsignature", blockindex->genSign.ToString()));
     result.push_back(Pair("basetarget", blockindex->nBaseTarget));
     result.push_back(Pair("cumulativediff", blockindex->nCumulativeDiff.GetHex()));
@@ -259,7 +259,7 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     // poc
     uint64_t baseTarget = blockindex->pprev ? blockindex->pprev->nBaseTarget : block.nBaseTarget;
     result.push_back(Pair("deadline", block.nDeadline / baseTarget));
-    result.push_back(Pair("plotid", block.nPlotID));
+    result.push_back(Pair("plotid", block.nPlotID.ToString()));
     result.push_back(Pair("generationsignature", block.genSign.ToString()));
     result.push_back(Pair("basetarget", block.nBaseTarget));
     result.push_back(Pair("cumulativediff", blockindex->nCumulativeDiff.GetHex()));

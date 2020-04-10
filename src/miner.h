@@ -24,7 +24,7 @@ struct CBlockTemplate
 };
 
 /** Generate a new block, without valid proof-of-work */
-CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& scriptPubKeyIn, uint64_t nonce = 0, uint64_t plotID = 0, uint64_t deadline = 0);
+CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& scriptPubKeyIn, uint64_t nonce = 0, uint160 plotID, uint64_t deadline = 0);
 
 #ifdef ENABLE_MINING
 /** Get script for -mineraddress */
