@@ -23,9 +23,9 @@ const uint64_t MAX_BASE_TARGET = 18325193796L;
 
 uint256 CalcGenerationSignature(uint256 lastSig, uint160 lastPlotID)
 {
-    vector<unsigned char> signature(lastSig.size() + sizeof(lastPlotID));
+    vector<unsigned char> signature(lastSig.size() + lastPlotID.size());
     memcpy(&signature[0], lastSig.begin(), lastSig.size());
-    memcpy(&signature(lastSig.size()), lastPlotID.begin(), lastPlotID.size());
+    memcpy(&signature[lastSig.size()], lastPlotID.begin(), lastPlotID.size());
     /*
     unsigned char* vx = (unsigned char*)&lastPlotID;
     for (auto i = 0; i < sizeof(lastPlotID); i++) {
@@ -92,10 +92,14 @@ vector<uint8_t> genNonceChunk(const uint160 plotID, const uint64_t nonce)
     //for (size_t i = 0; i < 8; i++) {
     //    genData[PLOT_SIZE + i] = xv[7 - i];
     //}
-    memcpy(&genData[PLOT_SIZE], plotID.begin(), plotID.size());
+    //memcpy(&genData[PLOT_SIZE], plotID.begin(), plotID.size());
+    uint8_t* xv = (uint8_t*)&plotID;
+    for (size_t i = 0; i < 20; i++) {
+        genData[PLOT_SIZE + i] = xv[19 - i];
+    }
 
     //put nonce
-    uint8_t* xv = (uint8_t*)&nonce;
+    xv = (uint8_t*)&nonce;
     for (size_t i = 20; i < 28; i++) {
         genData[PLOT_SIZE + i] = xv[27 - i];
     }

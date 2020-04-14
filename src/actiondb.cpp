@@ -166,12 +166,12 @@ bool CRelationView::AcceptAction(const int height, const uint256& txid, const CA
         batch.Write(std::make_pair(DB_RELATIONID, ba.second.GetPlotID()), ba.second);
         // add new action at tip
         relationTip[ba.first.GetPlotID()] = ba.second.GetPlotID();
-        LogPrintf("bind action, from:%s, to:%s\n", from.GetPlotID().GetHex().c_str(), ba.second.GetPlotID().GetHex().c_str());
+        LogPrintf("bind action, from:%s, to:%s\n", from.GetPlotID().GetHex(), ba.second.GetPlotID().GetHex());
     } else if (action.type() == typeid(CUnbindAction)) {
         auto from = boost::get<CUnbindAction>(action);
         auto active = std::make_pair(txid,std::make_pair(from, CKeyID()));
         relations.push_back(active);
-        LogPrintf("unbind action, from:%s\n", from.GetPlotID().GetHex().c_str());
+        LogPrintf("unbind action, from:%s\n", from.GetPlotID().GetHex());
         auto key = relationTip.find(from.GetPlotID());
         if(key!=relationTip.end()){
             relationTip.erase(key);
@@ -255,10 +255,10 @@ bool CRelationView::LoadRelationFromDisk(const int height)
                 auto from = relation.second.first;
                 auto to   = relation.second.second;
                 relationTip[from.GetPlotID()] = to.GetPlotID();
-                LogPrintf("bind action, from:%s, to:%s\n", from.GetPlotID().GetHex().c_str(), to.GetPlotID().GetHex().c_str());
+                LogPrintf("bind action, from:%s, to:%s\n", from.GetPlotID().GetHex(), to.GetPlotID().GetHex());
             } else if (relation.second.second == CKeyID()) {
                 auto from = relation.second.first;
-                LogPrintf("unbind action, from:%u\n", from.GetPlotID());
+                LogPrintf("unbind action, from:%u\n", from.GetPlotID().GetHex());
                 auto key = relationTip.find(from.GetPlotID());
                 if(key!=relationTip.end()){
                     relationTip.erase(key);
@@ -279,7 +279,7 @@ CRelationVector CRelationView::ListRelations() const
         CKeyID from;
         if(!Read(from_key, from)){
             //LogPrint(BCLog::RELATION, "%s: Read KeyID retrun false, PlotID:%u\n", __func__, fromPlotid);
-            LogPrintf("%s: Read KeyID retrun false, PlotID:%s\n", __func__, fromPlotid.GetHex().c_str());
+            LogPrintf("%s: Read KeyID retrun false, PlotID:%s\n", __func__, fromPlotid.GetHex());
             continue;
         }
         auto toPlotid = iter->second;
@@ -287,7 +287,7 @@ CRelationVector CRelationView::ListRelations() const
         CKeyID to;
         if(!Read(to_key, to)){
             //LogPrint(BCLog::RELATION, "%s: Read KeyID retrun false, PlotID:%u\n", __func__, toPlotid);
-            LogPrintf("%s: Read KeyID retrun false, PlotID:%s\n", __func__, toPlotid.GetHex().c_str());
+            LogPrintf("%s: Read KeyID retrun false, PlotID:%s\n", __func__, toPlotid.GetHex());
             continue;
         }
         auto value = std::make_pair(from, to);
