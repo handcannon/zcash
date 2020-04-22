@@ -102,12 +102,12 @@ using namespace std;
 map<string, string> mapArgs;
 map<string, vector<string> > mapMultiArgs;
 bool fDebug = false;
-bool fPrintToConsole = false;
-bool fPrintToDebugLog = true;
+bool fPrintToConsole = true;
+bool fPrintToDebugLog = false;
 bool fDaemon = false;
 bool fServer = false;
 string strMiscWarning;
-bool fLogTimestamps = DEFAULT_LOGTIMESTAMPS;
+bool fLogTimestamps = true;
 bool fLogTimeMicros = DEFAULT_LOGTIMEMICROS;
 bool fLogIPs = DEFAULT_LOGIPS;
 std::atomic<bool> fReopenDebugLog(false);
@@ -288,7 +288,8 @@ int LogPrintStr(const std::string &str)
     if (fPrintToConsole)
     {
         // print to console
-        ret = fwrite(str.data(), 1, str.size(), stdout);
+        string strTimestamped = LogTimestampStr(str, &fStartedNewLine);
+        ret = fprintf(stdout, "%s", strTimestamped.c_str());
         fflush(stdout);
     }
     else if (fPrintToDebugLog)
