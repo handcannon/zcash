@@ -328,6 +328,7 @@ libbitcoin_wallet_a_SOURCES = \
 # crypto primitives library
 crypto_libbitcoin_crypto_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_CONFIG_INCLUDES)
 crypto_libbitcoin_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+crypto_libbitcoin_crypto_a_CFLAGS = -fPIC
 crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/common.h \
   crypto/equihash.cpp \
@@ -347,7 +348,28 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/sha512.h \
   crypto/sph_shabal.h \
   crypto/sph_types.h \
-  crypto/shabal.c
+  crypto/shabal.c \
+  crypto/bip39/math/hmac_sha512.c \
+  crypto/bip39/math/hmac_sha512.h \
+  crypto/bip39/math/pkcs5_pbkdf2.c \
+  crypto/bip39/math/pkcs5_pbkdf2.h \
+  crypto/bip39/math/sha256.c \
+  crypto/bip39/math/sha256.h \
+  crypto/bip39/math/sha512.c \
+  crypto/bip39/math/sha512.h \
+  crypto/bip39/math/zeroize.c \
+  crypto/bip39/math/zeroize.h \
+  crypto/bip39/array_slice.hpp \
+  crypto/bip39/array_slice.ipp \
+  crypto/bip39/bip39_defines.h \
+  crypto/bip39/data.hpp \
+  crypto/bip39/data.ipp \
+  crypto/bip39/dictionary.hpp \
+  crypto/bip39/mnemonic.hpp \
+  crypto/bip39/bip39_defines.cpp \
+  crypto/bip39/dictionary_en.cpp \
+  crypto/bip39/mnemonic.cpp
+
 
 if ENABLE_MINING
 EQUIHASH_TROMP_SOURCES = \

@@ -26,6 +26,10 @@
 #include "crypter.h"
 #include "wallet/asyncrpcoperation_saplingmigration.h"
 #include "zcash/zip32.h"
+#include "random.h"
+
+#include <iterator>
+#include <algorithm>
 
 #include <assert.h>
 
@@ -2102,11 +2106,106 @@ bool CWallet::IsHDFullyEnabled() const
     return false;
 }
 
-void CWallet::GenerateNewSeed()
+RawHDSeed CWallet::GenerateMnemonic()
+{
+    // 256 bit entropy, 24 mnemonic words
+    libbitcoin::system::data_chunk entropy(32);
+    GetRandBytes(entropy.data(), entropy.size());
+
+    auto wl = libbitcoin::system::wallet::create_mnemonic(entropy);
+    std::string words_str;
+    for (size_t i = 0; i < wl.size(); i++)
+    {
+        words_str += wl[i];
+        if (i < wl.size() - 1)
+            words_str += " ";
+        if (wl.size() / 2 - 1 == i)
+            words_str += "\n      ";
+    }
+    mnemonic_words = words_str;
+
+    LogPrintf("|*********************************************************************************************|\n");
+    LogPrintf("   Wallet mnemonic words are:\n");
+    LogPrintf("      %s\n", words_str);
+    LogPrintf("|*********************************************************************************************|\n");
+
+    auto generation_seed = libbitcoin::system::wallet::decode_mnemonic(wl);
+    assert(generation_seed.size() == 64);
+
+    RawHDSeed raw_seed;
+    std::copy_n(generation_seed.begin() + 32, 32, std::back_inserter(raw_seed));
+
+    AddMasterKeyToWallet(wl);
+
+    return raw_seed;
+}
+
+std::string CWallet::GenerateMnemonicRPC()
+{
+    // 256 bit entropy, 24 mnemonic words
+    libbitcoin::system::data_chunk entropy(32);
+    GetRandBytes(entropy.data(), entropy.size());
+
+    auto wl = libbitcoin::system::wallet::create_mnemonic(entropy);
+    std::string words_str;
+    for (size_t i = 0; i < wl.size(); i++)
+    {
+        words_str += wl[i];
+        if (i < wl.size() - 1)
+            words_str += " ";
+    }
+    return words_str;
+}
+
+///void CWallet::AddMasterKeyToWallet(const std::string& mnemonic_str) {}
+
+CKeyID CWallet::AddMasterKeyToWallet(const libbitcoin::system::wallet::word_list& mnemonic_wl)
+{
+    auto generation_seed = libbitcoin::system::wallet::decode_mnemonic(mnemonic_wl);
+    assert(generation_seed.size() == 64);
+
+    CPrivKey raw_key;
+    std::copy_n(generation_seed.begin(), 32, std::back_inserter(raw_key));
+
+    CKey master_priv_key;
+    //master_priv_key.SetPrivKey(raw_key, true);
+    master_priv_key.Set(raw_key.begin(), raw_key.end(), true);
+
+    // import private key
+    CPubKey pubkey = master_priv_key.GetPubKey();
+    assert(master_priv_key.VerifyPubKey(pubkey));
+    CKeyID vchAddress = pubkey.GetID();
+    {
+        this->MarkDirty();
+        this->SetAddressBook(vchAddress, "master-key", "receive");
+
+        if (this->HaveKey(vchAddress)) {
+            return CKeyID();
+        }
+
+        this->mapKeyMetadata[vchAddress].nCreateTime = 1;
+
+        if (!this->AddKeyPubKey(master_priv_key, pubkey)) {
+            LogPrintf("Error adding master key to wallet");
+            return CKeyID();
+        }
+
+        this->nTimeFirstKey = 1;
+        this->ScanForWalletTransactions(chainActive.Genesis(), true);
+    }
+    return vchAddress;
+}
+
+void CWallet::GenerateNewSeed(RawHDSeed raw_seed)
 {
     LOCK(cs_wallet);
 
-    auto seed = HDSeed::Random(HD_WALLET_SEED_LENGTH);
+    //auto seed = HDSeed::Random(HD_WALLET_SEED_LENGTH);
+    HDSeed seed;
+    if (raw_seed.empty())
+        seed = HDSeed::Random(HD_WALLET_SEED_LENGTH);
+    else
+        seed = HDSeed(raw_seed);
 
     int64_t nCreationTime = GetTime();
 

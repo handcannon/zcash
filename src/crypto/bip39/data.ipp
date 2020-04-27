@@ -23,6 +23,7 @@
 #include <cstddef>
 #include <iterator>
 #include <initializer_list>
+#include <cassert>
 //#include <bitcoin/system/utility/assert.hpp>
 
 #ifndef BITCOIN_ASSERT

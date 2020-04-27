@@ -60,7 +60,7 @@ extern const dictionary en;
 // github.com/bitcoin/bips/blob/master/bip-0039/bip-0039-wordlists.md
 const dictionary_list all
 {
-    &en,
+    //&en,
     //&es,
     //&fr,
     //&it,

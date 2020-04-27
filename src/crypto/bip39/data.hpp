@@ -156,6 +156,6 @@ byte_array<Size> xor_data(const data_slice& bytes1, const data_slice& bytes2,
 } // namespace system
 } // namespace libbitcoin
 
-#include "data.ipp"
+#include "crypto/bip39/data.ipp"
 
 #endif

@@ -26,6 +26,7 @@
 #include "zcash/Address.hpp"
 #include "zcash/zip32.h"
 #include "base58.h"
+#include "crypto/bip39/mnemonic.hpp"
 
 #include <algorithm>
 #include <map>
@@ -869,6 +870,9 @@ public:
     MasterKeyMap mapMasterKeys;
     unsigned int nMasterKeyMaxID;
 
+    // bip39
+    std::string mnemonic_words;
+
     CWallet()
     {
         SetNull();
@@ -1280,11 +1284,17 @@ public:
     /* Returns true if HD is enabled for all address types, false if only for Sapling */
     bool IsHDFullyEnabled() const;
 
+    /** bip39 */
+    RawHDSeed GenerateMnemonic();
+    std::string GenerateMnemonicRPC();
+    //void AddMasterKeyToWallet(const std::string& mnemonic_str);
+    CKeyID AddMasterKeyToWallet(const libbitcoin::system::wallet::word_list& mnemonic_wl);
+
     /* Generates a new HD seed (will reset the chain child index counters)
        Sets the seed's version based on the current wallet version (so the
        caller must ensure the current wallet version is correct before calling
        this function). */
-    void GenerateNewSeed();
+    void GenerateNewSeed(RawHDSeed raw_seed = RawHDSeed());
 
     bool SetHDSeed(const HDSeed& seed);
     bool SetCryptedHDSeed(const uint256& seedFp, const std::vector<unsigned char> &vchCryptedSecret);

@@ -16,19 +16,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "mnemonic.hpp"
-
+#include "crypto/bip39/mnemonic.hpp"
 #include <algorithm>
 #include <cstdint>
 //#include <boost/locale.hpp>
-//#include <bitcoin/system/define.hpp>
-//#include <bitcoin/system/unicode/unicode.hpp>
-//#include <bitcoin/system/utility/assert.hpp>
-//#include <bitcoin/system/utility/binary.hpp>
-//#include <bitcoin/system/utility/collection.hpp>
-//#include <bitcoin/system/utility/string.hpp>
-//#include <bitcoin/system/wallet/dictionary.hpp>
-#include "math/pkcs5_pbkdf2.h"
+#include "crypto/bip39/math/pkcs5_pbkdf2.h"
 
 
 constexpr uint8_t byte_bits = 8;
@@ -148,8 +140,10 @@ long_hash decode_mnemonic(const word_list& mnemonic)
 long_hash decode_mnemonic(const word_list& mnemonic,
     const std::string& passphrase)
 {
-    const auto sentence = to_normal_nfkd_form(join(mnemonic));
-    const auto salt = to_normal_nfkd_form(passphrase_prefix + passphrase);
+    //const auto sentence = to_normal_nfkd_form(join(mnemonic));
+    //const auto salt = to_normal_nfkd_form(passphrase_prefix + passphrase);
+    const auto sentence = join(mnemonic);
+    const auto salt = passphrase_prefix + passphrase;
     return pkcs5_pbkdf2_hmac_sha512(to_chunk(sentence), to_chunk(salt),
         hmac_iterations);
 }

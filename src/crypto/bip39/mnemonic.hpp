@@ -23,14 +23,9 @@
 #include <string>
 #include <vector>
 
-//#include <bitcoin/system/math/hash.hpp>
-//#include <bitcoin/system/unicode/unicode.hpp>
-//#include <bitcoin/system/utility/data.hpp>
-
-#include "dictionary.hpp"
-#include "data.hpp"
-
-#include "bip39_defines.h"
+#include "crypto/bip39/dictionary.hpp"
+#include "crypto/bip39/data.hpp"
+#include "crypto/bip39/bip39_defines.h"
 
 namespace libbitcoin {
 namespace system {

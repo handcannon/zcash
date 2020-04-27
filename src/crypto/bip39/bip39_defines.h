@@ -6,7 +6,7 @@
 #include <limits>
 #include <assert.h>
 #include <stdint.h>
-#include "array_slice.hpp"
+#include "crypto/bip39/array_slice.hpp"
 
 namespace libbitcoin {
 namespace system {

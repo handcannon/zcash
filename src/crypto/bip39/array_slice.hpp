@@ -57,7 +57,7 @@ private:
 } // namespace system
 } // namespace libbitcoin
 
-#include "array_slice.ipp"
+#include "crypto/bip39/array_slice.ipp"
 
 #endif
 

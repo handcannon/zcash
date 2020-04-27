@@ -1686,7 +1686,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             // https://github.com/zcash/zcash/issues/3607
             if (!pwalletMain->IsCrypted()) {
                 // generate a new HD seed
-                pwalletMain->GenerateNewSeed();
+                pwalletMain->GenerateNewSeed(pwalletMain->GenerateMnemonic());
             }
         }
 

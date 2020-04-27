@@ -1,11 +1,18 @@
 #include <mutex>
 #include <boost/algorithm/string.hpp>
-#include <boost/locale/generator.hpp>
-#include <boost/locale/conversion.hpp>
-#include <boost/locale/localization_backend.hpp>
-#include "bip39_defines.h"
-#include "math/sha256.h"
-#include "math/pkcs5_pbkdf2.h"
+//#include <boost/locale/generator.hpp>
+//#include <boost/locale/conversion.hpp>
+//#include <boost/locale/localization_backend.hpp>
+#include "crypto/bip39/bip39_defines.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "crypto/bip39/math/sha256.h"
+#include "crypto/bip39/math/pkcs5_pbkdf2.h"
+#ifdef __cplusplus
+}
+#endif
 
 namespace libbitcoin {
 namespace system {
@@ -35,8 +42,8 @@ std::string join(const string_list& words, const std::string& delimiter)
 	return boost::join(words, delimiter);
 }
 
-using namespace boost::locale;
-
+//using namespace boost::locale;
+/*
 inline char ascii_to_lowercase(char character)
 {
 	return character + ('a' - 'A');
@@ -79,7 +86,6 @@ static std::string normal_form(const std::string& value, norm_type form)
 	if (value.empty())
 		return value;
 
-	/*
 #ifdef _MSC_VER
 	// Workaround lack of ICU support in published boost-locale NuGet packages.
 	const auto norm = to_win32_normal_form(form);
@@ -110,12 +116,7 @@ static std::string normal_form(const std::string& value, norm_type form)
 	backend_manager.select(BC_LOCALE_BACKEND);
 	const generator locale(backend_manager);
 	return normalize(value, form, locale(BC_LOCALE_UTF8));
-#endif */
-
-	auto backend_manager = localization_backend_manager::global();
-	backend_manager.select(BC_LOCALE_BACKEND);
-	const generator locale(backend_manager);
-	return normalize(value, form, locale(BC_LOCALE_UTF8));
+#endif
 }
 
 // Ensure validate_localization is called only once.
@@ -144,6 +145,7 @@ std::string to_normal_nfkd_form(const std::string& value)
 	std::call_once(icu_mutex, validate_localization);
 	return normal_form(value, norm_type::norm_nfkd);
 }
+*/
 
 } // namespace system
 } // namespace libbitcoin
