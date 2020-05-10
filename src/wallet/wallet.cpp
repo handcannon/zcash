@@ -234,8 +234,27 @@ CPubKey CWallet::GenerateNewKey()
     AssertLockHeld(cs_wallet); // mapKeyMetadata
     bool fCompressed = CanSupportFeature(FEATURE_COMPRPUBKEY); // default to compressed public keys if we want 0.6.0 wallets
 
-    CKey secret;
-    secret.MakeNewKey(fCompressed);
+    //CKey secret;
+    //secret.MakeNewKey(fCompressed);
+
+    if (hdChain.genSeed.size() != 64)
+    {
+        LogPrintf("generation seed size: %d\n", hdChain.genSeed.size());
+        throw std::runtime_error("CWallet::GenerateNewKey(): invalid generation seed!");
+    }
+
+    CExtKey masterKey;
+    CExtKey newkey;
+    masterKey.SetMaster(&hdChain.genSeed[0], hdChain.genSeed.size());
+    masterKey.Derive(newkey, hdChain.deriveCounter++);
+
+    // Update the chain model in the database
+    if (fFileBacked && !CWalletDB(strWalletFile).WriteHDChain(hdChain))
+        throw std::runtime_error("CWallet::GenerateNewKey(): Writing HD chain model failed");
+    
+    CKey secret = newkey.key;
+
+    //====================================================//
 
     // Compressed public keys were introduced in version 0.6.0
     if (fCompressed)
@@ -2120,7 +2139,7 @@ RawHDSeed CWallet::GenerateMnemonic()
         if (i < wl.size() - 1)
             words_str += " ";
         if (wl.size() / 2 - 1 == i)
-            words_str += "\n      ";
+            words_str += "\n                          ";
     }
     mnemonic_words = words_str;
 
@@ -2132,10 +2151,31 @@ RawHDSeed CWallet::GenerateMnemonic()
     auto generation_seed = libbitcoin::system::wallet::decode_mnemonic(wl);
     assert(generation_seed.size() == 64);
 
-    RawHDSeed raw_seed;
-    std::copy_n(generation_seed.begin() + 32, 32, std::back_inserter(raw_seed));
+    /*///===================================//
+    CExtKey prikey;
+    CExtPubKey pubkey;
+    prikey.SetMaster(&generation_seed[0], generation_seed.size());
+    pubkey = prikey.Neuter();
+    LogPrintf("master private key: %s\n", EncodeExtKey(prikey));
+    LogPrintf("master public key: %s\n", EncodeExtPubKey(pubkey));
 
-    AddMasterKeyToWallet(wl);
+    for (size_t i = 0; i < 10; i++)
+    {
+        CExtKey newkey;
+        prikey.Derive(newkey, i);
+        LogPrintf("new key %d: %s\n", i, EncodeSecret(newkey.key));
+    }
+    //===================================//*/
+
+    std::copy_n(generation_seed.begin(), generation_seed.size(), std::back_inserter(hdChain.genSeed));
+    SetHDChain(hdChain, false);
+
+    auto sapling_seed = Hash(generation_seed.begin(), generation_seed.end());
+
+    RawHDSeed raw_seed;
+    std::copy_n(sapling_seed.begin(), sapling_seed.size(), std::back_inserter(raw_seed));
+
+    //AddMasterKeyToWallet(wl);
 
     return raw_seed;
 }
@@ -2216,11 +2256,17 @@ void CWallet::GenerateNewSeed(RawHDSeed raw_seed)
     // store the key creation time together with
     // the child index counter in the database
     // as a hdchain object
+    /*
     CHDChain newHdChain;
     newHdChain.nVersion = CHDChain::VERSION_HD_BASE;
     newHdChain.seedFp = seed.Fingerprint();
     newHdChain.nCreateTime = nCreationTime;
     SetHDChain(newHdChain, false);
+    */
+    hdChain.nVersion = CHDChain::VERSION_HD_BASE;
+    hdChain.seedFp = seed.Fingerprint();
+    hdChain.nCreateTime = nCreationTime;
+    SetHDChain(hdChain, false);
 }
 
 bool CWallet::SetHDSeed(const HDSeed& seed)

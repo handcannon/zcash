@@ -51,6 +51,8 @@ public:
     uint256 seedFp;
     int64_t nCreateTime; // 0 means unknown
     uint32_t saplingAccountCounter;
+    std::vector<uint8_t> genSeed; // bip32 generation seed
+    uint32_t deriveCounter;       // bip32 derived children key counter
 
     CHDChain() { SetNull(); }
 
@@ -63,6 +65,8 @@ public:
         READWRITE(seedFp);
         READWRITE(nCreateTime);
         READWRITE(saplingAccountCounter);
+        READWRITE(genSeed);
+        READWRITE(deriveCounter);
     }
 
     void SetNull()
@@ -71,6 +75,8 @@ public:
         seedFp.SetNull();
         nCreateTime = 0;
         saplingAccountCounter = 0;
+        genSeed.clear();
+        deriveCounter = 0;
     }
 };
 
