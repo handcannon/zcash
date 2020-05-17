@@ -870,9 +870,6 @@ public:
     MasterKeyMap mapMasterKeys;
     unsigned int nMasterKeyMaxID;
 
-    // bip39
-    std::string mnemonic_words;
-
     CWallet()
     {
         SetNull();
@@ -1287,8 +1284,8 @@ public:
     /** bip39 */
     RawHDSeed GenerateMnemonic();
     std::string GenerateMnemonicRPC();
-    //void AddMasterKeyToWallet(const std::string& mnemonic_str);
     CKeyID AddMasterKeyToWallet(const libbitcoin::system::wallet::word_list& mnemonic_wl);
+    void RecoverWalletFromMnemonic(const libbitcoin::system::wallet::word_list& mnemonic_wl);
 
     /* Generates a new HD seed (will reset the chain child index counters)
        Sets the seed's version based on the current wallet version (so the

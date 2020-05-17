@@ -237,6 +237,8 @@ CPubKey CWallet::GenerateNewKey()
     //CKey secret;
     //secret.MakeNewKey(fCompressed);
 
+    // use BIP32 to derive new key
+
     if (hdChain.genSeed.size() != 64)
     {
         LogPrintf("generation seed size: %d\n", hdChain.genSeed.size());
@@ -2141,7 +2143,6 @@ RawHDSeed CWallet::GenerateMnemonic()
         if (wl.size() / 2 - 1 == i)
             words_str += "\n                          ";
     }
-    mnemonic_words = words_str;
 
     LogPrintf("|*********************************************************************************************|\n");
     LogPrintf("   Wallet mnemonic words are:\n");
@@ -2197,8 +2198,6 @@ std::string CWallet::GenerateMnemonicRPC()
     return words_str;
 }
 
-///void CWallet::AddMasterKeyToWallet(const std::string& mnemonic_str) {}
-
 CKeyID CWallet::AddMasterKeyToWallet(const libbitcoin::system::wallet::word_list& mnemonic_wl)
 {
     auto generation_seed = libbitcoin::system::wallet::decode_mnemonic(mnemonic_wl);
@@ -2234,6 +2233,35 @@ CKeyID CWallet::AddMasterKeyToWallet(const libbitcoin::system::wallet::word_list
         this->ScanForWalletTransactions(chainActive.Genesis(), true);
     }
     return vchAddress;
+}
+
+void CWallet::RecoverWalletFromMnemonic(const libbitcoin::system::wallet::word_list& mnemonic_wl)
+{
+    auto generation_seed = libbitcoin::system::wallet::decode_mnemonic(mnemonic_wl);
+    assert(generation_seed.size() == 64);
+
+    hdChain.SetNull();
+
+    std::copy_n(generation_seed.begin(), generation_seed.size(), std::back_inserter(hdChain.genSeed));
+    SetHDChain(hdChain, false);
+
+    auto sapling_seed = Hash(generation_seed.begin(), generation_seed.end());
+
+    RawHDSeed raw_seed;
+    std::copy_n(sapling_seed.begin(), sapling_seed.size(), std::back_inserter(raw_seed));
+
+    HDSeed seed = HDSeed(raw_seed);
+
+    // If the wallet is encrypted and locked, this will fail.
+    if (!SetHDSeed(seed))
+        throw std::runtime_error(std::string(__func__) + ": SetHDSeed failed");
+
+    hdChain.nVersion = CHDChain::VERSION_HD_BASE;
+    hdChain.seedFp = seed.Fingerprint();
+    hdChain.nCreateTime = GetTime();
+    SetHDChain(hdChain, false);
+
+    // clear wallet
 }
 
 void CWallet::GenerateNewSeed(RawHDSeed raw_seed)

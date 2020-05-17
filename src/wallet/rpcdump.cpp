@@ -74,13 +74,13 @@ std::string DecodeDumpString(const std::string &str) {
     return ret.str();
 }
 
-UniValue importmnemonic(const UniValue& params, bool fHelp)
+UniValue recoverfrommnemonic(const UniValue& params, bool fHelp)
 {
     if (!EnsureWalletIsAvailable(fHelp))
         return NullUniValue;
 
     if (fHelp || params.size() != 1)
-        throw runtime_error("importmnemonic error info");
+        throw runtime_error("recoverfrommnemonic error info");
     
     string strMnemonic = params[0].get_str();
 
@@ -90,12 +90,17 @@ UniValue importmnemonic(const UniValue& params, bool fHelp)
     if (vecMnemonic.size() != 24)
         throw JSONRPCError(RPC_WALLET_ERROR, "Mnemonic code should be 24 words!");
 
+    /*
     auto destination = pwalletMain->AddMasterKeyToWallet(vecMnemonic);
 
     if (CKeyID() == destination)
         throw JSONRPCError(RPC_WALLET_ERROR, "This mnemonic code has already been imported!");
 
     return EncodeDestination(destination);
+    */
+    pwalletMain->RecoverWalletFromMnemonic(vecMnemonic);
+
+    return std::string("Wallet is recovered successfully!");
 }
 
 UniValue getnewmnemonic(const UniValue& params, bool fHelp)
