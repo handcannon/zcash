@@ -163,9 +163,9 @@ public:
         //vSeeds.push_back(CDNSSeedData("str4d.xyz", "dnsseed.str4d.xyz")); // @str4d
 
         // guarantees the first 2 characters, when base58 encoded, are "t1"
-        base58Prefixes[PUBKEY_ADDRESS]     = {0x1C,0xB8};
+        base58Prefixes[PUBKEY_ADDRESS]     = {0x03,0x61}; //{0x1C,0xB8}
         // guarantees the first 2 characters, when base58 encoded, are "t3"
-        base58Prefixes[SCRIPT_ADDRESS]     = {0x1C,0xBD};
+        base58Prefixes[SCRIPT_ADDRESS]     = {0x03,0x66}; //{0x1C,0xBD}
         // the first character, when base58 encoded, is "5" or "K" or "L" (as in Bitcoin)
         base58Prefixes[SECRET_KEY]         = {0x80};
         // do not rely on these BIP32 prefixes; they are not specified and may change
