@@ -80,11 +80,11 @@ noinst_PROGRAMS =
 TESTS =
 
 if BUILD_BITCOIND
-  bin_PROGRAMS += zcashd
+  bin_PROGRAMS += taod
 endif
 
 if BUILD_BITCOIN_UTILS
-  bin_PROGRAMS += zcash-cli zcash-tx
+  bin_PROGRAMS += tao-cli tao-tx
 endif
 
 LIBZCASH_H = \
@@ -458,16 +458,16 @@ nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
 # bitcoind binary #
-zcashd_SOURCES = bitcoind.cpp
-zcashd_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-zcashd_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-zcashd_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+taod_SOURCES = bitcoind.cpp
+taod_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+taod_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+taod_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-zcashd_SOURCES += bitcoind-res.rc
+taod_SOURCES += bitcoind-res.rc
 endif
 
-zcashd_LDADD = \
+taod_LDADD = \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_COMMON) \
@@ -481,7 +481,7 @@ zcashd_LDADD = \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-zcashd_LDADD += \
+taod_LDADD += \
   $(BOOST_LIBS) \
   $(BDB_LIBS) \
   $(SSL_LIBS) \
@@ -494,16 +494,16 @@ zcashd_LDADD += \
   $(LIBZCASH_LIBS)
 
 # bitcoin-cli binary #
-zcash_cli_SOURCES = bitcoin-cli.cpp
-zcash_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
-zcash_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-zcash_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+tao_cli_SOURCES = bitcoin-cli.cpp
+tao_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
+tao_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+tao_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-zcash_cli_SOURCES += bitcoin-cli-res.rc
+tao_cli_SOURCES += bitcoin-cli-res.rc
 endif
 
-zcash_cli_LDADD = \
+tao_cli_LDADD = \
   $(LIBBITCOIN_CLI) \
   $(LIBUNIVALUE) \
   $(LIBBITCOIN_UTIL) \
@@ -517,17 +517,17 @@ zcash_cli_LDADD = \
 #
 
 # zcash-tx binary #
-zcash_tx_SOURCES = bitcoin-tx.cpp
-zcash_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-zcash_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-zcash_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+tao_tx_SOURCES = bitcoin-tx.cpp
+tao_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+tao_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+tao_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-zcash_tx_SOURCES += bitcoin-tx-res.rc
+tao_tx_SOURCES += bitcoin-tx-res.rc
 endif
 
 # FIXME: Is libzcash needed for zcash_tx?
-zcash_tx_LDADD = \
+tao_tx_LDADD = \
   $(LIBUNIVALUE) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
@@ -536,7 +536,7 @@ zcash_tx_LDADD = \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBZCASH_LIBS)
 
-zcash_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
+tao_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
 # zcash protocol primitives #
