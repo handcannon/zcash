@@ -2243,6 +2243,7 @@ void CWallet::RecoverWalletFromMnemonic(const libbitcoin::system::wallet::word_l
     hdChain.SetNull();
 
     std::copy_n(generation_seed.begin(), generation_seed.size(), std::back_inserter(hdChain.genSeed));
+    hdChain.deriveCounter = 0;
     SetHDChain(hdChain, false);
 
     auto sapling_seed = Hash(generation_seed.begin(), generation_seed.end());
@@ -2259,7 +2260,14 @@ void CWallet::RecoverWalletFromMnemonic(const libbitcoin::system::wallet::word_l
     hdChain.nVersion = CHDChain::VERSION_HD_BASE;
     hdChain.seedFp = seed.Fingerprint();
     hdChain.nCreateTime = GetTime();
+    hdChain.saplingAccountCounter = 0;
     SetHDChain(hdChain, false);
+
+    NewKeyPool();
+
+    // Need to completely rewrite the wallet file; if we don't, bdb might keep
+    // bits of the unencrypted private key in slack space in the database file.
+    CDB::Rewrite(strWalletFile);
 
     // clear wallet
 }
