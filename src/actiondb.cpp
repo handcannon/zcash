@@ -87,16 +87,23 @@ CAction DecodeAction(const CTransactionRef tx, std::vector<unsigned char>& vchSi
             nAmount += coin.out.nValue;
         }
         */
+        
         CCoins coins;
         pcoinsTip->GetCoins(tx->GetHash(), coins);
         for (const auto& out : coins.vout)
             nAmount += out.nValue;
+        
+        /*
+        auto coins = pcoinsTip->AccessCoins(tx->GetHash());
+        for (const auto& out : coins->vout)
+            nAmount += out.nValue;
+        */
         //============================//
 
         auto outValue = tx->GetValueOut();
         if (nAmount - outValue != Params().GetConsensus().nActionFee) {
             LogPrintf("Action warning fees, fee=%u\n", nAmount - outValue);
-            continue;
+            //continue;
         }
         
         for (auto vout : tx->vout) {
@@ -142,11 +149,11 @@ CKeyID CRelationView::To(uint160 plotid) const
         auto to_key = std::make_pair(DB_RELATIONID, key->second);
         if(!Read(to_key, value)){
             //LogPrint(BCLog::RELATION, "CRelationView::To failure, can not get to plotid, from:%u\n", plotid);
-            //LogPrintf("CRelationView::To failure, can not get to plotid, from:%u\n", plotid);
+            LogPrintf("CRelationView::To failure, can not get to plotid, from:%s\n", plotid.GetHex());
         }
     }else{
         //LogPrint(BCLog::RELATION, "CRelationView::To failure, get bind to, from:%u\n", plotid);
-        //LogPrintf("CRelationView::To failure, get bind to, from:%u\n", plotid);
+        LogPrintf("CRelationView::To failure, get bind to, from:%s\n", plotid.GetHex());
     }
     return std::move(value);
 }

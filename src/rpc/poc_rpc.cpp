@@ -249,7 +249,8 @@ uint256 SendAction(CWallet *const pwallet, const CAction& action, const CKey &ke
         throw JSONRPCError(RPC_WALLET_ERROR, strError);
     }
     
-    CMutableTransaction mtx = *(CTransaction*)&wtx;
+    //CMutableTransaction mtx = *(CTransaction*)(&wtx);
+    CMutableTransaction mtx = *static_cast<CTransaction*>(&wtx);
     
     BOOST_ASSERT(mtx.vout.size() == 2);
     std::vector<unsigned char> vch;
@@ -261,29 +262,19 @@ uint256 SendAction(CWallet *const pwallet, const CAction& action, const CKey &ke
     mtx.vout[1] = CTxOut(0, opRetScript);
     mtx.vout[nChangePosInOut].nValue += nFeeRequired;
 
-    //if (!pwallet->SignTransaction(mtx)) {
-    //    throw JSONRPCError(RPC_WALLET_ERROR, "sign error");
-    //}
+    if (!pwallet->SignTransaction(mtx)) 
+        throw JSONRPCError(RPC_WALLET_ERROR, "sign error");
 
-    /*
-    const CAmount highfee{ actionFee };
-    uint256 txid;
-    std::string err_string;
-    auto tx = MakeTransactionRef(CTransaction(mtx));
-    CValidationState state;
-    if (!pwallet->CommitTransaction(tx, mapValue_t{}, {}, reservekey, g_connman.get(), state)) {
-        strError = strprintf("Error: The transaction was rejected! Reason given: %s", FormatStateMessage(state));
-        throw JSONRPCError(RPC_WALLET_ERROR, strError);
-    }
-    */
+    //CWalletTx wtxNew(pwalletMain, CTransaction(mtx));
+    //*(CTransaction*)(&wtx) = CTransaction(mtx);
+    *static_cast<CTransaction*>(&wtx) = CTransaction(mtx);
 
-    *(CTransaction*)(&wtx) = mtx;
     if (!pwallet->CommitTransaction(wtx, reservekey)) {
         strError = strprintf("Error: The transaction of SendAction was rejected!");
         throw JSONRPCError(RPC_WALLET_ERROR, strError);
     }
 
-    return std::move(mtx.GetHash());
+    return std::move(wtx.GetHash());
 }
 
 static UniValue bindplotid(const UniValue& params, bool fHelp)
@@ -425,8 +416,8 @@ static UniValue getbindinginfo(const UniValue& params, bool fHelp)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
     }
     auto from = boost::get<CKeyID>(dest);
-    //auto to = prelationview->To(from);
-    CKeyID to;
+    auto to = prelationview->To(from);
+    //CKeyID to;
     if (to == CKeyID()) {
         return UniValue(UniValue::VOBJ);
     }

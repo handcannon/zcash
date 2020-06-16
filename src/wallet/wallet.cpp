@@ -2246,7 +2246,12 @@ void CWallet::RecoverWalletFromMnemonic(const libbitcoin::system::wallet::word_l
     hdChain.deriveCounter = 0;
     SetHDChain(hdChain, false);
 
-    auto sapling_seed = Hash(generation_seed.begin(), generation_seed.end());
+    auto sapling_seed = Hash(generation_seed.begin(), generation_seed.begin() + generation_seed.size()); //generation_seed.end()
+
+    //
+    LogPrintf("Mnemonic Seed is: %s\n", HexStr(generation_seed.begin(), generation_seed.end()));
+    LogPrintf("HD Seed is: %s\n", sapling_seed.GetHex()); //HexStr<uint256>(sapling_seed)
+    //
 
     RawHDSeed raw_seed;
     std::copy_n(sapling_seed.begin(), sapling_seed.size(), std::back_inserter(raw_seed));
@@ -3449,6 +3454,34 @@ bool CWallet::FundTransaction(CMutableTransaction& tx, CAmount &nFeeRet, int& nC
             tx.vin.push_back(txin);
     }
 
+    return true;
+}
+
+bool CWallet::SignTransaction(CMutableTransaction &tx)
+{
+    AssertLockHeld(cs_wallet); // mapWallet
+
+    // sign the new tx
+    int nIn = 0;
+    for (auto& input : tx.vin) {
+        std::map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(input.prevout.hash);
+        if(mi == mapWallet.end() || input.prevout.n >= mi->second.vout.size()) {
+            return false;
+        }
+        const CScript& scriptPubKey = mi->second.vout[input.prevout.n].scriptPubKey;
+        const CAmount& amount = mi->second.vout[input.prevout.n].nValue;
+
+        // Grab the current consensus branch ID
+        auto consensusBranchId = CurrentEpochBranchId(chainActive.Height() + 1, Params().GetConsensus());
+        
+        SignatureData sigdata;
+        if (!ProduceSignature(MutableTransactionSignatureCreator(this, &tx, nIn, amount, SIGHASH_ALL), scriptPubKey, sigdata, consensusBranchId)) {
+            return false;
+        }
+        //UpdateInput(input, sigdata);
+        input.scriptSig = sigdata.scriptSig;
+        nIn++;
+    }
     return true;
 }
 
