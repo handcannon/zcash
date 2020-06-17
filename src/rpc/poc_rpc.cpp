@@ -129,7 +129,7 @@ UniValue getMiningInfo(const UniValue& params, bool fHelp)
     UniValue obj(UniValue::VOBJ);
     obj.pushKV("height", height);
     obj.pushKV("generationSignature", HexStr<uint256>(generationSignature));
-    obj.pushKV("cumulativeDiff", diff.GetHex());
+    //obj.pushKV("cumulativeDiff", diff.GetHex());
     obj.pushKV("baseTarget", nBaseTarget);
     obj.pushKV("targetDeadline", param.TargetDeadline());
     return obj;
@@ -493,6 +493,43 @@ static UniValue listbindings(const UniValue& params, bool fHelp)
     return results;
 }
 
+static UniValue upgradeaddresstomembership(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 2) 
+        throw std::runtime_error("upgradeaddresstomembership error info");
+    
+    // calculate black hole address
+    /*
+    std::vector<unsigned char> vch(65, 0);
+    vch[0] = 4;
+    vch[64] = 1;
+    CPubKey pubkey1(vch);
+    auto address1 = EncodeDestination(CTxDestination(pubkey1.GetID()));
+
+    vch[64] = 2;
+    CPubKey pubkey2(vch);
+    auto address2 = EncodeDestination(CTxDestination(pubkey2.GetID()));
+
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("address1: ", address1);
+    result.pushKV("address2: ", address2);
+    return result;
+    */
+
+    UniValue bindParams(UniValue::VARR);
+    UniValue fromAddr = params[0];
+    UniValue toAddr(UniValue::VSTR);
+    toAddr.setStr(Params().GetConsensus().strMemberBindingAddress);
+    bindParams.push_back(fromAddr);
+    bindParams.push_back(toAddr);
+
+    int nTB = atoi(params[1].get_str());
+    if (nTB <= 0)
+        throw JSONRPCError(RPC_INVALID_PARAMS, "Invalid TB number, should be an integer and greater than zero");
+
+    return bindplotid(bindParams, fHelp);
+}
+
 // clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafeMode
@@ -504,6 +541,7 @@ static const CRPCCommand commands[] =
     //{ "poc",               "unbindplotid",            &unbindplotid,           true },
     { "poc",               "listbindings",            &listbindings,           true },
     { "poc",               "getbindinginfo",          &getbindinginfo,         true },
+    { "poc",          "upgradeaddresstomembership",   &upgradeaddresstomembership,   true },
 };
 
 void RegisterPocRPCCommands(CRPCTable& t)

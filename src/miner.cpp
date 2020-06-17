@@ -400,12 +400,31 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
         CMutableTransaction txNew = CreateNewContextualCMutableTransaction(chainparams.GetConsensus(), nHeight);
         txNew.vin.resize(1);
         txNew.vin[0].prevout.SetNull();
-        txNew.vout.resize(1);
+        //txNew.vout.resize(1);
+        //txNew.vout[0].scriptPubKey = scriptPubKeyIn;
+        //txNew.vout[0].nValue = GetBlockSubsidy(nHeight, chainparams.GetConsensus());
+
+        // two kind of mining: raw mining and member mining
+        CAmount totalReward = GetBlockSubsidy(nHeight, chainparams.GetConsensus());
+        double rewardRatio = 1;
+        auto toKeyID = prelationview->To(plotID);
+        if (toKeyID != CKeyID() && EncodeDestination(CTxDestination(toKeyID)) == chainparams.GetConsensus().strMemberBindingAddress)
+            rewardRatio = chainparams.GetConsensus().memberMiningRatio;
+        else
+            rewardRatio = chainparams.GetConsensus().rawMiningRatio;
+        
+        txNew.vout.resize(2);
         txNew.vout[0].scriptPubKey = scriptPubKeyIn;
-        txNew.vout[0].nValue = GetBlockSubsidy(nHeight, chainparams.GetConsensus());
+        txNew.vout[0].nValue = totalReward * rewardRatio;
+        auto scriptFoundation = GetScriptForDestination(DecodeDestination(chainparams.GetConsensus().strFoundationAddress));
+        txNew.vout[1].scriptPubKey = scriptFoundation;
+        txNew.vout[1].nValue = totalReward * (1 - rewardRatio);
+
         // Set to 0 so expiry height does not apply to coinbase txs
         txNew.nExpiryHeight = 0;
 
+        // remove zcash founders reward
+        /*
         if ((nHeight > 0) && (nHeight <= chainparams.GetConsensus().GetLastFoundersRewardBlockHeight(nHeight))) {
             // Founders reward is 20% of the block subsidy
             auto vFoundersReward = txNew.vout[0].nValue / 5;
@@ -415,6 +434,7 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
             // And give it to the founders
             txNew.vout.push_back(CTxOut(vFoundersReward, chainparams.GetFoundersRewardScriptAtHeight(nHeight)));
         }
+        */
 
         // Add fees
         txNew.vout[0].nValue += nFees;

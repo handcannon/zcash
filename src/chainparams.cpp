@@ -149,6 +149,13 @@ public:
         consensus.nMinimumChainWork = uint256S("0x00"); //uint256S("000000000000000000000000000000000000000000000000017e73a331fae01c")
         consensus.nActionFee = 0.05 * CENT;
 
+        consensus.rawMiningRatio = 0.2;     // 2 : 8
+        consensus.memberMiningRatio = 0.95; // 9.5 : 0.5
+        consensus.nMemberFeePerTB = 50 * COIN;
+        consensus.strFoundationAddress = "71Sixue13zr4z1G1jgiCrsMz5H5fE6VjLWP";
+        consensus.strBlackHoleAddress = "71MeWcYhvZvsQ8v4bnvxh3cJn4nxZWcwTvQ";     // point(0, 1), prefix is 4
+        consensus.strMemberBindingAddress = "71APXEwiayAj3hhDCYLf9nkuPT3y3zASmR8"; // point(0, 2), prefix is 4
+
         /**
          * The message start string should be awesome! ⓩ❤
          */

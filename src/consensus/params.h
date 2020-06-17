@@ -144,6 +144,14 @@ struct Params {
 
     uint256 nMinimumChainWork;
     CAmount nActionFee;
+
+    // membership mining
+    double rawMiningRatio;
+    double memberMiningRatio;
+    CAmount nMemberFeePerTB;
+    std::string strFoundationAddress;
+    std::string strBlackHoleAddress;
+    std::string strMemberBindingAddress;
 };
 } // namespace Consensus
 

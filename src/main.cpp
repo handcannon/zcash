@@ -2991,8 +2991,8 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         CTxDestination dest;
         ExtractDestination(script, dest);
         auto coinbaseDest = boost::get<CKeyID>(dest);
-        auto to = prelationview->To(block.nPlotID);
-        auto targetPlotid = to.IsNull() ? block.nPlotID : to.GetPlotID();
+        //auto to = prelationview->To(block.nPlotID);
+        //auto targetPlotid = to.IsNull() ? block.nPlotID : to.GetPlotID();
         //if (targetPlotid != coinbaseDest.GetPlotID()) {
         //    return state.DoS(100, false, REJECT_INVALID, "bad-coinbase-plotid", false);
         //}
@@ -4056,7 +4056,7 @@ bool ContextualCheckBlock(
         }
 
         if (!found) {
-            return state.DoS(100, error("%s: founders reward missing", __func__), REJECT_INVALID, "cb-no-founders-reward");
+            //return state.DoS(100, error("%s: founders reward missing", __func__), REJECT_INVALID, "cb-no-founders-reward");
         }
     }
 
